@@ -17,16 +17,24 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-// Initialize an empty persistent database on Preview only. A shared Postgres
-// advisory lock prevents concurrent serverless instances from racing migrations.
-if ((getenv('VERCEL_ENV') ?: '') === 'preview' && (getenv('DB_CONNECTION') ?: '') === 'pgsql') {
+// Run schema setup only on the explicit Preview path; a Postgres advisory lock
+// prevents concurrent serverless instances from racing migrations.
+if ((getenv('VERCEL_ENV') ?: '') === 'preview'
+    && (getenv('DB_CONNECTION') ?: '') === 'pgsql'
+    && parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) === '/__preview/database-setup') {
     $consoleKernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
     $consoleKernel->bootstrap();
 
     $connection = Illuminate\Support\Facades\DB::connection();
-    $migrationLock = 202610150001;
-    $connection->select('SELECT pg_advisory_lock(?)', [$migrationLock]);
+    $migrationLock = 202610150002;
+    $lock = $connection->selectOne('SELECT pg_try_advisory_lock(?) AS locked', [$migrationLock]);
+    if (!in_array($lock->locked, [true, 1, '1', 't'], true)) {
+        http_response_code(503);
+        header('Content-Type: text/plain; charset=UTF-8');
+        exit('Preview database setup is already running. Retry shortly.');
+    }
 
+    $setupMessage = '';
     try {
         $schema = $connection->getSchemaBuilder();
         $migrationCount = $schema->hasTable('migrations')
@@ -45,14 +53,17 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview' && (getenv('DB_CONNECTION') ?: ''
                 throw new RuntimeException('Preview database seeding failed.');
             }
         }
+
+        $setupMessage = 'Preview database schema and demo data are ready.';
     } catch (Throwable $error) {
         http_response_code(500);
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
-        exit;
+        $setupMessage = 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
     } finally {
         $connection->select('SELECT pg_advisory_unlock(?)', [$migrationLock]);
     }
+
+    header('Content-Type: text/plain; charset=UTF-8');
+    exit($setupMessage);
 }
 
 $app->handleRequest(Request::capture());
