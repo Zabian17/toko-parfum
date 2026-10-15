@@ -8,52 +8,32 @@
   },
   "routes": [
     {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/public/images/$1"
+    },
+    {
+      "src": "/admin/css/(.*)",
+      "dest": "/public/admin/css/$1"
+    },
+    {
+      "src": "/admin/js/(.*)",
+      "dest": "/public/admin/js/$1"
+    },
+    {
       "src": "/storage/(.*)",
       "dest": "/storage/app/public/$1"
     },
     {
-      "src": "/(admin|css|js|images|pages)/(.*)",
-      "dest": "/public/$1/$2"
-    },
-    {
       "src": "/(favicon\\.ico|robots\\.txt)",
       "dest": "/public/$1"
-    },
-    {
-      "src": "/$",
-      "dest": "/public/index.html"
-    },
-    {
-      "src": "/katalog(\\?.*)?$",
-      "dest": "/public/katalog.html"
-    },
-    {
-      "src": "/product(\\?.*)?$",
-      "dest": "/public/product.html"
-    },
-    {
-      "src": "/cart(\\?.*)?$",
-      "dest": "/public/cart.html"
-    },
-    {
-      "src": "/checkout(\\?.*)?$",
-      "dest": "/public/checkout.html"
-    },
-    {
-      "src": "/lacak(\\?.*)?$",
-      "dest": "/public/lacak.html"
-    },
-    {
-      "src": "/admin/?$",
-      "dest": "/public/admin/dashboard.html"
-    },
-    {
-      "src": "/admin/([a-zA-Z0-9_-]+)(\\?.*)?$",
-      "dest": "/public/admin/$1.html"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.php"
     },
     {
       "src": "/(.*)",

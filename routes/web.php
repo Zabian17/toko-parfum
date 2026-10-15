@@ -21,10 +21,22 @@ require __DIR__.'/auth.php';
  * by the PHP built-in server from the public/ folder automatically.
  */
 Route::get('{path}', function (string $path) {
-    $file = public_path(trim($path, '/') . '.html');
+    $clean = trim($path, '/');
+    if ($clean === 'admin') {
+        $clean = 'admin/dashboard';
+    }
+    if (str_ends_with(strtolower($clean), '.html')) {
+        $clean = substr($clean, 0, -5);
+    }
+    $file = public_path($clean . '.html');
     if (File::exists($file)) {
         return response(File::get($file), 200)
             ->header('Content-Type', 'text/html');
     }
+    $directFile = public_path($clean);
+    if (File::isFile($directFile)) {
+        return response()->file($directFile);
+    }
     abort(404);
 })->where('path', '.+');
+
