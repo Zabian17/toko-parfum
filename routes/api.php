@@ -77,7 +77,13 @@ Route::post('/admin/auth/login', function (Request $request) {
     }
 
     $user  = $request->user()->load('role:id,name,slug,permissions,is_super');
-    $token = $user->createToken('admin-panel')->plainTextToken;
+    
+    // Serverless-resilient signed token + database token
+    $sig = hash_hmac('sha256', "albi_auth_{$user->id}", (string) config('app.key'));
+    $token = "s|{$user->id}|{$sig}";
+    try {
+        $user->createToken('admin-panel');
+    } catch (\Throwable $e) {}
 
     return response()->json([
         'token' => $token,
@@ -99,7 +105,10 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // Admin logout (destroys current token)
     Route::post('/auth/logout', function (Request $request) {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()?->currentAccessToken();
+        if ($token && method_exists($token, 'delete') && ($token->id ?? 0) < 900000) {
+            $token->delete();
+        }
         return response()->json(['message' => 'Logout berhasil.']);
     });
 
