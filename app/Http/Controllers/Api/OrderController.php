@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Order\CheckoutRequest;
+use App\Http\Requests\Order\UpdateOrderStatusRequest;
+use App\Http\Resources\OrderResource;
+use App\Models\Order;
+use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class OrderController extends Controller
+{
+    public function __construct(private readonly OrderService $service) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $orders = $this->service->list($request->only([
+            'status', 'payment_status', 'search',
+            'date_from', 'date_to', 'order_type', 'per_page',
+            'filters', 'sorters',
+        ]));
+
+        return response()->json($orders->through(fn($o) => new OrderResource($o)));
+    }
+
+    public function show(Order $order): JsonResponse
+    {
+        $order->load(['items', 'customer']);
+
+        return response()->json(['data' => new OrderResource($order)]);
+    }
+
+    public function checkout(CheckoutRequest $request): JsonResponse
+    {
+        $order = $this->service->checkout($request->validated());
+
+        return response()->json(['data' => new OrderResource($order)], 201);
+    }
+
+    public function updateStatus(UpdateOrderStatusRequest $request, Order $order): JsonResponse
+    {
+        $order = $this->service->updateStatus(
+            $order,
+            $request->except('payment_proof'),
+            $request->file('payment_proof')
+        );
+
+        return response()->json(['data' => new OrderResource($order)]);
+    }
+
+    public function offlineOrder(CheckoutRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $order = $this->service->createOfflineOrder($data);
+
+        return response()->json(['data' => new OrderResource($order)], 201);
+    }
+
+    public function track(string $orderNumber): JsonResponse
+    {
+        $order = Order::where('order_number', $orderNumber)->first();
+        if (!$order) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
+        }
+        $order->load(['items']);
+        return response()->json(['data' => new OrderResource($order)]);
+    }
+}

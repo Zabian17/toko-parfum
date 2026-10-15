@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesanan — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <!-- Toolbar -->
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <div class="admin-search" style="flex:1;min-width:200px;max-width:300px">
+          <input type="text" id="search-input" placeholder="No. pesanan, nama, email…" />
+          <button id="search-btn"><i class="bi bi-search"></i></button>
+        </div>
+        <select id="filter-status" class="admin-form-control" style="width:auto">
+          <option value="">Semua Status</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Diproses</option>
+          <option value="shipped">Dikirim</option>
+          <option value="delivered">Diterima</option>
+          <option value="cancelled">Dibatalkan</option>
+        </select>
+        <select id="filter-payment" class="admin-form-control" style="width:auto">
+          <option value="">Semua Status Bayar</option>
+          <option value="unpaid">Belum Bayar</option>
+          <option value="paid">Lunas</option>
+        </select>
+        <input type="date" id="filter-date-from" class="admin-form-control" style="width:auto" title="Dari tanggal" />
+        <input type="date" id="filter-date-to"   class="admin-form-control" style="width:auto" title="Sampai tanggal" />
+      </div>
+
+      <div class="admin-card">
+        <div id="orders-table"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detail Pesanan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="order-detail-body">
+        <div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>
+      </div>
+      <div class="modal-footer d-flex align-items-center gap-2">
+        <label class="admin-form-label mb-0 me-1" style="white-space:nowrap">Update Status:</label>
+        <select id="status-select" class="admin-form-control" style="width:auto">
+          <option value="pending">Pending</option>
+          <option value="processing">Diproses</option>
+          <option value="shipped">Dikirim</option>
+          <option value="delivered">Diterima</option>
+          <option value="cancelled">Dibatalkan</option>
+        </select>
+        <span id="auto-paid-hint" class="small text-success d-none" style="font-size:0.78rem;font-weight:600">
+          <i class="bi bi-check-circle me-1"></i>Otomatis Lunas
+        </span>
+        <button type="button" class="btn-admin-gold" id="btn-update-status" style="white-space:nowrap">
+          <span id="status-text">Simpan Status</span>
+          <span class="spinner-border spinner-border-sm d-none" id="status-spinner"></span>
+        </button>
+        <button type="button" class="btn-admin-outline ms-auto" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+let openOrderId = null;
+let table;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!AdminAuth.requireAuth()) return;
+  AdminAuth.buildLayout('Kelola Pesanan', 'orders');
+  initTable();
+  bindEvents();
+});
+
+function initTable() {
+  table = new Tabulator('#orders-table', {
+    ajaxURL: '/api/admin/orders',
+    ajaxRequestFunc: function(url, config, params) {
+      const p = { page: params.page || 1, per_page: params.size || 10 };
+      const remoteFilters = params.filter || params.filters || [];
+      const remoteSorters = params.sort || params.sorters || [];
+      const search = document.getElementById('search-input').value.trim();
+      const status = document.getElementById('filter-status').value;
+      const paymentStatus = document.getElementById('filter-payment').value;
+      const dateFrom = document.getElementById('filter-date-from').value;
+      const dateTo   = document.getElementById('filter-date-to').value;
+      if (search)   p.search    = search;
+      if (status)   p.status    = status;
+      if (paymentStatus) p.payment_status = paymentStatus;
+      if (dateFrom) p.date_from = dateFrom;
+      if (dateTo)   p.date_to   = dateTo;
+      if (remoteFilters.length) p.filters = JSON.stringify(remoteFilters);
+      if (remoteSorters.length) p.sorters = JSON.stringify(remoteSorters);
+      return axios.get(url, {
+        headers: { 'Authorization': 'Bearer ' + AdminAuth.token(), 'Accept': 'application/json' },
+        params: p,
+      }).then(function(res) {
+        const r = res.data;
+        return { data: r.data ?? r, last_page: r.meta?.last_page ?? r.last_page ?? 1 };
+      });
+    },
+    pagination: true,
+    paginationMode: 'remote',
+    filterMode: 'remote',
+    sortMode: 'remote',
+    paginationSize: 10,
+    paginationSizeSelector: [10, 20, 50],
+    layout: 'fitColumns',
+    resizableColumns: true,
+    placeholder: '<div class="admin-empty"><i class="bi bi-receipt"></i><br>Belum ada pesanan</div>',
+    columns: [
+      {
+        title: 'No. Pesanan',
+        field: 'order_number',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          return `<span style="font-weight:600;font-size:0.82rem;color:var(--admin-gold)">${escA(cell.getValue() || cell.getRow().getData().id)}</span>`;
+        },
+        minWidth: 120,
+      },
+      {
+        title: 'Pelanggan',
+        field: 'customer_name',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          const o = cell.getRow().getData();
+          return `<div style="font-size:0.85rem;font-weight:500">${escA(o.customer_name || '—')}</div>
+                  <div style="font-size:0.75rem;color:#888">${escA(o.customer_email || '')}</div>`;
+        },
+        minWidth: 140,
+      },
+      {
+        title: 'Total',
+        field: 'total_amount',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          return `<span style="font-weight:600;font-size:0.85rem">${fmtRp(cell.getValue() || cell.getRow().getData().grand_total || 0)}</span>`;
+        },
+        width: 150,
+      },
+      {
+        title: 'Pembayaran',
+        field: 'payment_method',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          const row = cell.getRow().getData();
+          const pStatus = row.payment_status || 'unpaid';
+          return `<div style="font-size:0.8rem;text-transform:uppercase;font-weight:600">${escA(cell.getValue() || '—')}</div>
+                  <div style="margin-top:3px">${paymentBadge(pStatus)}</div>`;
+        },
+        width: 140,
+      },
+      {
+        title: 'Status',
+        field: 'status',
+        headerFilter: 'list',
+        headerFilterParams: {
+          values: { '': 'Semua', pending: 'Pending', processing: 'Diproses', shipped: 'Dikirim', delivered: 'Diterima', cancelled: 'Dibatalkan' }
+        },
+        formatter: function(cell) { return statusBadge(cell.getValue()); },
+        width: 120,
+      },
+      {
+        title: 'Type',
+        field: 'order_type',
+        headerFilter: 'list',
+        formatter: function(cell) {
+          return `<span style="font-size:0.8rem;text-transform:uppercase">${escA(cell.getValue() || '—')}</span>`;
+        },
+        width: 120,
+      },
+      {
+        title: 'Tanggal',
+        field: 'created_at',
+        formatter: function(cell) {
+          return `<span style="font-size:0.78rem;color:#888">${fmtDate(cell.getValue())}</span>`;
+        },
+        width: 120,
+      },
+      {
+        title: '',
+        field: 'id',
+        headerSort: false,
+        width: 120,
+        formatter: function(cell) {
+          return `<button class="btn-action btn-view" data-id="${cell.getValue()}" title="Detail"><i class="bi bi-eye"></i></button>`;
+        },
+        cellClick: function(e, cell) {
+          const btn = e.target.closest('.btn-view');
+          if (btn) openOrderDetail(btn.dataset.id);
+        },
+      },
+    ],
+  });
+}
+
+function bindEvents() {
+  const doSearch = debounce(() => table.setData(), 400);
+  document.getElementById('search-input').addEventListener('input', doSearch);
+  document.getElementById('search-btn').addEventListener('click', () => table.setData());
+  document.getElementById('filter-status').addEventListener('change', () => table.setData());
+  document.getElementById('filter-payment').addEventListener('change', () => table.setData());
+  document.getElementById('filter-date-from').addEventListener('change', () => table.setData());
+  document.getElementById('filter-date-to').addEventListener('change', () => table.setData());
+  document.getElementById('btn-update-status').addEventListener('click', updateOrderStatus);
+  document.getElementById('status-select').addEventListener('change', (e) => {
+    const hint = document.getElementById('auto-paid-hint');
+    if (e.target.value === 'delivered') {
+      hint.classList.remove('d-none');
+    } else {
+      hint.classList.add('d-none');
+    }
+  });
+}
+
+async function openOrderDetail(id) {
+  openOrderId = id;
+  document.getElementById('order-detail-body').innerHTML = '<div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>';
+  orderModal.show();
+
+  try {
+    const res = await adminApi.get(`/orders/${id}`);
+    const o = res.data.data || res.data;
+    renderOrderDetail(o);
+    const select = document.getElementById('status-select');
+    select.value = o.status || 'pending';
+    const hint = document.getElementById('auto-paid-hint');
+    if (select.value === 'delivered') {
+      hint.classList.remove('d-none');
+    } else {
+      hint.classList.add('d-none');
+    }
+  } catch(e) {
+    document.getElementById('order-detail-body').innerHTML = '<p class="admin-empty">Gagal memuat detail pesanan</p>';
+  }
+}
+
+function renderOrderDetail(o) {
+  const items = o.items || o.order_items || [];
+  document.getElementById('order-detail-body').innerHTML = `
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <table style="font-size:0.85rem;width:100%">
+          <tr><td style="color:#888;padding:0.25rem 0;width:130px">No. Pesanan</td><td><strong>${escA(o.order_number || o.id)}</strong></td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Tanggal</td><td>${fmtDateTime(o.created_at)}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Status</td><td>${statusBadge(o.status)}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Pembayaran</td><td style="text-transform:uppercase">${escA(o.payment_method || '—')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Status Bayar</td><td>${paymentBadge(o.payment_status || 'unpaid')}</td></tr>
+        </table>
+      </div>
+      <div class="col-12 col-md-6">
+        <table style="font-size:0.85rem;width:100%">
+          <tr><td style="color:#888;padding:0.25rem 0;width:130px">Pelanggan</td><td><strong>${escA(o.customer_name || '—')}</strong></td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Email</td><td>${escA(o.customer_email || '—')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Telepon</td><td>${escA(o.customer_phone || '—')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0;vertical-align:top">Alamat</td><td style="font-size:0.82rem">${escA(o.shipping_address || '—')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Kurir</td><td style="text-transform:uppercase">${escA(o.shipping_courier || '—')} ${escA(o.shipping_service || '')}</td></tr>
+        </table>
+      </div>
+    </div>
+    <hr style="margin:1rem 0">
+    <p style="font-weight:600;font-size:0.88rem;margin-bottom:0.75rem">Item Pesanan</p>
+    <table class="admin-table">
+      <thead><tr><th>Produk</th><th>Varian</th><th>Harga</th><th>Qty</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        ${items.map(i => `
+          <tr>
+            <td style="font-size:0.83rem">${escA(i.product_name || i.product?.name || '—')}</td>
+            <td style="font-size:0.8rem;color:#888">${escA(i.variant_name || i.variant?.name || '—')}</td>
+            <td style="font-size:0.83rem">${fmtRp(i.price)}</td>
+            <td style="font-size:0.83rem">${i.quantity || i.qty}</td>
+            <td style="font-size:0.83rem;font-weight:600">${fmtRp(i.subtotal || (i.price * (i.quantity || i.qty)))}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:1rem;text-align:right;font-size:0.88rem">
+      <div style="color:#888">Subtotal: ${fmtRp(o.subtotal)}</div>
+      <div style="color:#888">Ongkos Kirim: ${fmtRp(o.shipping_cost)}</div>
+      ${o.discount_amount ? `<div style="color:#388e3c">Diskon: -${fmtRp(o.discount_amount)}</div>` : ''}
+      <div style="font-weight:700;font-size:1rem;color:#9A7B2F;margin-top:0.4rem">Total: ${fmtRp(o.total_amount || o.grand_total)}</div>
+    </div>
+    ${o.notes ? `<div style="margin-top:1rem;padding:0.75rem;background:#f8f8f8;border-radius:6px;font-size:0.83rem"><strong>Catatan:</strong> ${escA(o.notes)}</div>` : ''}
+  `;
+}
+
+async function updateOrderStatus() {
+  const status = document.getElementById('status-select').value;
+  document.getElementById('status-text').classList.add('d-none');
+  document.getElementById('status-spinner').classList.remove('d-none');
+  document.getElementById('btn-update-status').disabled = true;
+
+  try {
+    await adminApi.patch(`/orders/${openOrderId}/status`, { status });
+    orderModal.hide();
+    const note = status === 'delivered' ? ' (Status Bayar: Lunas)' : '';
+    showAlert(`Status pesanan diubah ke: ${STATUS_LABEL[status] || status}${note}`);
+    table.setData();
+  } catch(e) {
+    showAlert(e.response?.data?.message || 'Gagal mengubah status.', 'error');
+  } finally {
+    document.getElementById('status-text').classList.remove('d-none');
+    document.getElementById('status-spinner').classList.add('d-none');
+    document.getElementById('btn-update-status').disabled = false;
+  }
+}
+
+const STATUS_LABEL = { pending:'Pending', processing:'Diproses', shipped:'Dikirim', delivered:'Diterima', cancelled:'Dibatalkan' };
+
+function debounce(fn, delay = 300) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+</script>
+</body>
+</html>

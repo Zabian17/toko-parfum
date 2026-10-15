@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "framework": null,
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.7.4"
+    }
+  },
+  "routes": [
+    {
+      "src": "/storage/(.*)",
+      "dest": "/storage/app/public/$1"
+    },
+    {
+      "src": "/(admin|css|js|images|pages)/(.*)",
+      "dest": "/public/$1/$2"
+    },
+    {
+      "src": "/(favicon\\.ico|robots\\.txt)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/$",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/katalog(\\?.*)?$",
+      "dest": "/public/katalog.html"
+    },
+    {
+      "src": "/product(\\?.*)?$",
+      "dest": "/public/product.html"
+    },
+    {
+      "src": "/cart(\\?.*)?$",
+      "dest": "/public/cart.html"
+    },
+    {
+      "src": "/checkout(\\?.*)?$",
+      "dest": "/public/checkout.html"
+    },
+    {
+      "src": "/lacak(\\?.*)?$",
+      "dest": "/public/lacak.html"
+    },
+    {
+      "src": "/admin/?$",
+      "dest": "/public/admin/dashboard.html"
+    },
+    {
+      "src": "/admin/([a-zA-Z0-9_-]+)(\\?.*)?$",
+      "dest": "/public/admin/$1.html"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.php"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.php"
+    }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "APP_KEY": "base64:RT0SXY9r8/WDqlog5/DyIReIMu9rEwY5ygyJjUiuWLQ=",
+    "LOG_CHANNEL": "stderr",
+    "CACHE_STORE": "array",
+    "SESSION_DRIVER": "cookie",
+    "QUEUE_CONNECTION": "sync"
+  }
+}

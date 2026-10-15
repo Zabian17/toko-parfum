@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pengaturan — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <div id="settings-loading" class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat pengaturan…</div>
+      <form id="settings-form" class="d-none" novalidate>
+
+        <!-- Informasi Toko -->
+        <div class="admin-card mb-3">
+          <div class="admin-card-header">
+            <h6 class="admin-card-title"><i class="bi bi-shop me-2"></i>Informasi Toko</h6>
+          </div>
+          <div class="row g-3 p-3">
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Nama Toko</label>
+                <input type="text" id="store_name" name="store_name" class="admin-form-control" />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Telepon Toko</label>
+                <input type="text" id="store_phone" name="store_phone" class="admin-form-control" />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Email Toko</label>
+                <input type="email" id="store_email" name="store_email" class="admin-form-control" />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Website</label>
+                <input type="url" id="store_website" name="store_website" class="admin-form-control" placeholder="https://…" />
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Alamat Toko</label>
+                <textarea id="store_address" name="store_address" class="admin-form-control" rows="2"></textarea>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Kota / Kecamatan</label>
+                <input type="text" id="store_city" name="store_city" class="admin-form-control" />
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Provinsi</label>
+                <input type="text" id="store_province" name="store_province" class="admin-form-control" />
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Kode Pos</label>
+                <input type="text" id="store_postal_code" name="store_postal_code" class="admin-form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pembayaran -->
+        <div class="admin-card mb-3">
+          <div class="admin-card-header">
+            <h6 class="admin-card-title"><i class="bi bi-credit-card me-2"></i>Pembayaran</h6>
+          </div>
+          <div class="row g-3 p-3">
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="midtrans_enabled" name="midtrans_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan Midtrans (Online Payment)</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="cod_enabled" name="cod_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan Bayar di Tempat (COD)</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="bank_transfer_enabled" name="bank_transfer_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan Transfer Bank</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Info Rekening Bank</label>
+                <textarea id="bank_transfer_info" name="bank_transfer_info" class="admin-form-control" rows="3"
+                  placeholder="BCA 1234567890 a.n. Toko Albi&#10;Mandiri 0987654321 a.n. Toko Albi"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pengiriman -->
+        <div class="admin-card mb-3">
+          <div class="admin-card-header">
+            <h6 class="admin-card-title"><i class="bi bi-truck me-2"></i>Pengiriman</h6>
+          </div>
+          <div class="row g-3 p-3">
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="rajaongkir_enabled" name="rajaongkir_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan RajaOngkir (Kalkulasi Ongkos Kirim)</span>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Kota Asal Pengiriman</label>
+                <select id="rajaongkir_province" class="admin-form-control mb-2">
+                  <option value="">— Pilih Provinsi —</option>
+                </select>
+                <select id="rajaongkir_origin" name="rajaongkir_origin" class="admin-form-control">
+                  <option value="">— Pilih Kota/Kabupaten —</option>
+                </select>
+                <small class="text-muted">Pilih kota asal untuk kalkulasi ongkos kirim RajaOngkir.</small>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Ongkir Default (jika RajaOngkir nonaktif)</label>
+                <input type="number" id="default_shipping_cost" name="default_shipping_cost" class="admin-form-control" min="0" step="1000" placeholder="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifikasi & Stok -->
+        <div class="admin-card mb-3">
+          <div class="admin-card-header">
+            <h6 class="admin-card-title"><i class="bi bi-bell me-2"></i>Notifikasi & Stok</h6>
+          </div>
+          <div class="row g-3 p-3">
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="email_notification_enabled" name="email_notification_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan Notifikasi Email untuk Pesanan Baru</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="low_stock_alert" name="low_stock_alert" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Aktifkan Peringatan Stok Rendah</span>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Batas Stok Rendah</label>
+                <input type="number" id="low_stock_threshold" name="low_stock_threshold" class="admin-form-control" min="1" placeholder="5" />
+              </div>
+            </div>
+            <div class="col-12 col-md-8">
+              <div class="admin-form-group">
+                <label class="admin-form-label">Email Notifikasi Admin</label>
+                <input type="email" id="admin_notification_email" name="admin_notification_email" class="admin-form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn-admin-outline" id="btn-reset">Reset</button>
+          <button type="button" class="btn-admin-outline" id="btn-test-email">
+            <span id="test-email-text"><i class="bi bi-envelope-paper me-1"></i>Testing Email</span>
+            <span class="spinner-border spinner-border-sm d-none" id="test-email-spinner"></span>
+          </button>
+          <button type="submit" class="btn-admin-gold" id="btn-save">
+            <span id="save-text"><i class="bi bi-check-circle me-1"></i>Simpan Pengaturan</span>
+            <span class="spinner-border spinner-border-sm d-none" id="save-spinner"></span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+let originalSettings = {};
+
+/* Field definitions — maps settings key to element id */
+const FIELDS_TEXT = [
+  'store_name','store_phone','store_email','store_website','store_address',
+  'store_city','store_province','store_postal_code',
+  'bank_transfer_info',
+  'admin_notification_email',
+];
+const FIELDS_NUMBER = ['default_shipping_cost','low_stock_threshold'];
+const FIELDS_BOOL = [
+  'midtrans_enabled','cod_enabled','bank_transfer_enabled',
+  'rajaongkir_enabled',
+  'email_notification_enabled','low_stock_alert',
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!AdminAuth.requireAuth()) return;
+  AdminAuth.buildLayout('Pengaturan', 'settings');
+  loadSettings();
+  document.getElementById('settings-form').addEventListener('submit', saveSettings);
+  document.getElementById('btn-reset').addEventListener('click', resetForm);
+    document.getElementById('btn-test-email').addEventListener('click', async function () {
+      const btn = this;
+      const spinner = document.getElementById('test-email-spinner');
+      btn.disabled = true;
+      spinner.classList.remove('d-none');
+      try {
+        const res = await adminApi.post('/settings/test-email');
+        const msg = res.data.message || 'Email pengujian dikirim.';
+        showAlert(msg);
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Gagal mengirim email pengujian.';
+        showAlert(msg, 'error');
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+      }
+    });
+
+  // Province change → load cities
+  document.getElementById('rajaongkir_province').addEventListener('change', async function() {
+    const provinceId = this.value;
+    const citySelect = document.getElementById('rajaongkir_origin');
+    citySelect.innerHTML = '<option value="">Memuat kota…</option>';
+    if (!provinceId) {
+      citySelect.innerHTML = '<option value="">— Pilih Kota/Kabupaten —</option>';
+      return;
+    }
+    try {
+      const res = await axios.get(`/api/shipping/cities?province_id=${provinceId}`);
+      const cities = res.data.data || [];
+      citySelect.innerHTML = '<option value="">— Pilih Kota/Kabupaten —</option>' +
+        cities.map(c => `<option value="${c.city_id}">${escA(c.type + ' ' + c.city_name)}</option>`).join('');
+    } catch(e) {
+      citySelect.innerHTML = '<option value="">Gagal memuat kota</option>';
+    }
+  });
+});
+
+async function loadSettings() {
+  try {
+    const res = await adminApi.get('/settings');
+    const data = res.data.data || res.data;
+    originalSettings = flattenSettings(data);
+    await loadProvinces(originalSettings.rajaongkir_origin);
+    fillForm(originalSettings);
+    document.getElementById('settings-loading').classList.add('d-none');
+    document.getElementById('settings-form').classList.remove('d-none');
+  } catch(e) {
+    document.getElementById('settings-loading').innerHTML = '<div class="admin-empty"><i class="bi bi-exclamation-circle"></i><br>Gagal memuat pengaturan</div>';
+  }
+}
+
+/* API returns [{id, key, value, group}] array — flatten to {key: value} map */
+function flattenSettings(data) {
+  const flat = {};
+  if (Array.isArray(data)) {
+    data.forEach(item => { if (item.key) flat[item.key] = item.value; });
+  } else if (data && typeof data === 'object') {
+    Object.assign(flat, data);
+  }
+  return flat;
+}
+
+async function loadProvinces(currentCityId) {
+  try {
+    const res = await axios.get('/api/shipping/provinces');
+    const provinces = res.data.data || [];
+    const sel = document.getElementById('rajaongkir_province');
+    sel.innerHTML = '<option value="">— Pilih Provinsi —</option>' +
+      provinces.map(p => `<option value="${p.province_id}">${escA(p.province)}</option>`).join('');
+    // If we have a saved city, load that province's cities pre-selected
+    if (currentCityId) {
+      await preloadCityProvince(provinces, currentCityId);
+    }
+  } catch(e) { /* RajaOngkir may be disabled; silently ignore */ }
+}
+
+async function preloadCityProvince(provinces, cityId) {
+  // Try to find which province this city belongs to by loading all cities per province
+  // Instead, just load city options for each province until we find it (or skip if too slow)
+  // Simple approach: leave province unselected, load all cities without province filter
+  try {
+    const res = await axios.get('/api/shipping/cities');
+    const cities = res.data.data || [];
+    const citySelect = document.getElementById('rajaongkir_origin');
+    citySelect.innerHTML = '<option value="">— Pilih Kota/Kabupaten —</option>' +
+      cities.map(c => `<option value="${c.city_id}">${escA(c.type + ' ' + c.city_name)}</option>`).join('');
+    citySelect.value = cityId;
+    // Set province select based on found city
+    const found = cities.find(c => String(c.city_id) === String(cityId));
+    if (found) {
+      document.getElementById('rajaongkir_province').value = found.province_id || '';
+    }
+  } catch(e) { /* ignore */ }
+}
+
+function fillForm(settings) {
+  FIELDS_TEXT.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.value = settings[k] ?? '';
+  });
+  FIELDS_NUMBER.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.value = settings[k] ?? '';
+  });
+  FIELDS_BOOL.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.checked = settings[k] === true || settings[k] === '1' || settings[k] === 1;
+  });
+  // rajaongkir_origin is a select handled separately by loadProvinces
+}
+
+function collectForm() {
+  const payload = {};
+  FIELDS_TEXT.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) payload[k] = el.value.trim();
+  });
+  FIELDS_NUMBER.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) payload[k] = el.value !== '' ? Number(el.value) : null;
+  });
+  FIELDS_BOOL.forEach(k => {
+    const el = document.getElementById(k);
+    if (el) payload[k] = el.checked;
+  });
+  // rajaongkir_origin select
+  const cityEl = document.getElementById('rajaongkir_origin');
+  if (cityEl) payload.rajaongkir_origin = cityEl.value;
+  return payload;
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  const payload = collectForm();
+
+  document.getElementById('save-text').classList.add('d-none');
+  document.getElementById('save-spinner').classList.remove('d-none');
+  document.getElementById('btn-save').disabled = true;
+
+  try {
+    await adminApi.post('/settings', payload);
+    originalSettings = payload;
+    showAlert('Pengaturan berhasil disimpan');
+  } catch(err) {
+    const msg = err.response?.data?.message || 'Gagal menyimpan pengaturan';
+    const errors = err.response?.data?.errors;
+    if (errors) {
+      const msgs = Object.values(errors).flat().join(' | ');
+      showAlert(msgs, 'error');
+    } else {
+      showAlert(msg, 'error');
+    }
+  } finally {
+    document.getElementById('save-text').classList.remove('d-none');
+    document.getElementById('save-spinner').classList.add('d-none');
+    document.getElementById('btn-save').disabled = false;
+  }
+}
+
+function resetForm() {
+  fillForm(originalSettings);
+  showAlert('Form direset ke nilai tersimpan', 'warning');
+}
+</script>
+</body>
+</html>

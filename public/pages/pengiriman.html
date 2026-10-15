@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informasi Pengiriman — Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="/css/theme.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-albi">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+    <div class="search-bar d-none d-md-flex" style="width:280px">
+      <input type="text" id="search-input" placeholder="Cari parfum…" onkeydown="if(event.key==='Enter')window.location.href='/?q='+encodeURIComponent(this.value)" />
+      <button onclick="window.location.href='/?q='+encodeURIComponent(document.getElementById('search-input').value)"><i class="bi bi-search"></i></button>
+    </div>
+    <a href="../" class="nav-link-albi d-none d-md-inline">Beranda</a>
+    <a href="../katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
+    <a href="../lacak" class="nav-link-albi d-none d-md-inline">Lacak Pesanan</a>
+    <a href="../cart" class="nav-link-albi position-relative px-2">
+      <i class="bi bi-bag" style="font-size:1.2rem"></i>
+      <span class="cart-badge" data-cart-badge style="display:none">0</span>
+    </a>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<section class="py-5">
+  <div class="container" style="max-width:760px">
+    <h1 class="section-title mb-4" style="font-size:2rem">Informasi Pengiriman</h1>
+    <p class="section-subtitle mb-5">Semua yang perlu kamu tahu tentang pengiriman produk dari Toko Albi Parfum.</p>
+
+    <!-- Kurir -->
+    <div class="admin-card mb-4" style="border-radius:12px;padding:1.5rem;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <h5 class="fw-bold mb-3"><i class="bi bi-truck me-2" style="color:var(--gold)"></i>Kurir Pengiriman</h5>
+      <p class="text-muted mb-3">Kami bekerja sama dengan jasa pengiriman terpercaya di Indonesia:</p>
+      <div class="row g-3">
+        <div class="col-6 col-md-4">
+          <div class="p-3 rounded-3 text-center" style="background:#f9f9f9;border:1px solid #eee">
+            <div class="fw-bold">JNE</div>
+            <small class="text-muted">Regular, YES, OKE</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="p-3 rounded-3 text-center" style="background:#f9f9f9;border:1px solid #eee">
+            <div class="fw-bold">POS Indonesia</div>
+            <small class="text-muted">Paket Biasa, Kilat Khusus</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="p-3 rounded-3 text-center" style="background:#f9f9f9;border:1px solid #eee">
+            <div class="fw-bold">TIKI</div>
+            <small class="text-muted">Regular, ONS, ECO</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estimasi Waktu -->
+    <div class="admin-card mb-4" style="border-radius:12px;padding:1.5rem;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <h5 class="fw-bold mb-3"><i class="bi bi-clock me-2" style="color:var(--gold)"></i>Estimasi Waktu Pengiriman</h5>
+      <table class="table table-borderless mb-0">
+        <thead style="background:#f9f5ee">
+          <tr>
+            <th>Layanan</th>
+            <th>Estimasi</th>
+            <th>Keterangan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Kilat / Same Day</td>
+            <td>1 hari</td>
+            <td>Terbatas kota tertentu</td>
+          </tr>
+          <tr>
+            <td>Ekspres (YES, ONS)</td>
+            <td>1–2 hari kerja</td>
+            <td>Estimasi tidak termasuk hari libur</td>
+          </tr>
+          <tr>
+            <td>Regular</td>
+            <td>2–5 hari kerja</td>
+            <td>Tersedia untuk seluruh Indonesia</td>
+          </tr>
+          <tr>
+            <td>Ekonomi (OKE, ECO)</td>
+            <td>3–7 hari kerja</td>
+            <td>Harga lebih hemat</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Biaya Kirim -->
+    <div class="admin-card mb-4" style="border-radius:12px;padding:1.5rem;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <h5 class="fw-bold mb-3"><i class="bi bi-calculator me-2" style="color:var(--gold)"></i>Biaya Pengiriman</h5>
+      <p class="text-muted">Biaya ongkos kirim dihitung otomatis berdasarkan berat paket dan kota tujuan menggunakan layanan <strong>RajaOngkir</strong>. Kamu bisa melihat rincian biaya kirim saat checkout setelah memilih kota tujuan.</p>
+      <p class="text-muted mb-0">Berat produk parfum biasanya berkisar antara <strong>200–1000 gram</strong> per botol tergantung ukuran.</p>
+    </div>
+
+    <!-- Pengemasan -->
+    <div class="admin-card mb-4" style="border-radius:12px;padding:1.5rem;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <h5 class="fw-bold mb-3"><i class="bi bi-box-seam me-2" style="color:var(--gold)"></i>Pengemasan</h5>
+      <p class="text-muted mb-0">Setiap produk dikemas dengan aman menggunakan bubble wrap dan kardus tebal untuk memastikan parfummu tiba dalam kondisi sempurna. Pesanan di atas Rp 500.000 mendapatkan kemasan gift box gratis.</p>
+    </div>
+
+    <!-- Tracking -->
+    <div class="admin-card mb-4" style="border-radius:12px;padding:1.5rem;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2" style="color:var(--gold)"></i>Pelacakan Paket</h5>
+      <p class="text-muted mb-0">Setelah pesanan dikirim, nomor resi pengiriman akan tersedia di halaman detail pesananmu. Kamu bisa melacak paket melalui website resmi kurir masing-masing.</p>
+    </div>
+
+    <div class="mt-4 p-4 rounded-3" style="background:#FFF9EE;border:1px solid #f0dba7">
+      <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2" style="color:var(--gold)"></i>Catatan Penting</h6>
+      <ul class="text-muted mb-0 ps-3">
+        <li>Pesanan diproses pada hari kerja (Senin–Sabtu, 08.00–17.00 WIB)</li>
+        <li>Pesanan masuk setelah pukul 15.00 akan diproses keesokan harinya</li>
+        <li>Keterlambatan pengiriman oleh kurir bukan tanggungjawab toko</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 text-center">
+      <a href="/" class="btn-gold" style="text-decoration:none;padding:0.75rem 2rem;font-size:0.95rem">
+        <i class="bi bi-shop me-2"></i>Mulai Belanja Sekarang
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">Albi <span>Parfum</span></div>
+        <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
+      </div>
+      <div class="col-6 col-md-2">
+        <h6>Navigasi</h6>
+        <a href="../">Beranda</a>
+        <a href="../katalog">Katalog</a>
+        <a href="../cart">Keranjang</a>
+        <a href="../lacak">Lacak Pesanan</a>
+      </div>
+      <div class="col-6 col-md-3">
+        <h6>Bantuan</h6>
+        <a href="cara-pemesanan.html">Cara Pemesanan</a>
+        <a href="pengiriman.html">Pengiriman</a>
+        <a href="kebijakan-retur.html">Kebijakan Retur</a>
+      </div>
+      <div class="col-12 col-md-3">
+        <h6>Kontak</h6>
+        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
+      </div>
+    </div>
+    <hr class="footer-divider" />
+    <p class="footer-copy">&copy; 2025 Toko Albi Parfum. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
+<script>
+  // Init cart badge
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => Cart._notifyBadge());
+  } else {
+    Cart._notifyBadge();
+  }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <!-- Stat Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div>
+              <div class="stat-card-label">Total Penjualan</div>
+              <div class="stat-card-value" id="stat-total-sales">—</div>
+            </div>
+            <div class="stat-card-icon gold"><i class="bi bi-wallet2"></i></div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div>
+              <div class="stat-card-label">Penjualan Hari Ini</div>
+              <div class="stat-card-value" id="stat-today-sales">—</div>
+            </div>
+            <div class="stat-card-icon black"><i class="bi bi-calendar-check"></i></div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div>
+              <div class="stat-card-label">Pesanan Baru</div>
+              <div class="stat-card-value" id="stat-pending">—</div>
+            </div>
+            <div class="stat-card-icon orange"><i class="bi bi-inbox"></i></div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div>
+              <div class="stat-card-label">Stok Menipis</div>
+              <div class="stat-card-value" id="stat-low-stock">—</div>
+            </div>
+            <div class="stat-card-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Order Status Breakdown -->
+        <div class="col-12 col-md-4">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <p class="admin-card-title">Status Pesanan</p>
+            </div>
+            <div id="order-breakdown" style="padding:1rem">
+              <div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales Chart -->
+        <div class="col-12 col-md-8">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <p id="sales-chart-title" class="admin-card-title">Penjualan Bulan Ini</p>
+            </div>
+            <div style="padding:1rem 1.25rem;height:240px">
+              <canvas id="sales-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Recent Orders -->
+        <div class="col-12 col-lg-7">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <p class="admin-card-title">Pesanan Terbaru</p>
+              <a href="orders" class="btn-admin-outline" style="font-size:0.78rem;padding:0.3rem 0.8rem">Lihat Semua</a>
+            </div>
+            <div id="recent-orders-wrap">
+              <div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Stock -->
+        <div class="col-12 col-lg-5">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <p class="admin-card-title">Stok Menipis</p>
+              <a href="stock" class="btn-admin-outline" style="font-size:0.78rem;padding:0.3rem 0.8rem">Kelola Stok</a>
+            </div>
+            <div id="low-stock-wrap">
+              <div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.admin-content -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!AdminAuth.requireAuth()) return;
+  AdminAuth.buildLayout('Dashboard', 'dashboard');
+  // set dynamic month-year title for the sales chart
+  const titleEl = document.getElementById('sales-chart-title');
+  if (titleEl) {
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const now = new Date();
+    titleEl.textContent = 'Penjualan ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  }
+  loadDashboard();
+});
+
+async function loadDashboard() {
+  try {
+    const res = await adminApi.get('/dashboard');
+    const d = res.data.data || res.data;
+    renderStats(d.summary);
+    renderOrderBreakdown(d.order_status_breakdown || {});
+    renderSalesChart(d.sales_chart || []);
+    renderRecentOrders(d.recent_orders || []);
+    renderLowStock(d.low_stock_items || []);
+  } catch (e) {
+    showAlert('Gagal memuat data dashboard.', 'error');
+  }
+}
+
+function renderStats(d) {
+  const totalQty = Number(d.total_sales ?? 0);
+  const todayQty = Number(d.today_sales ?? 0);
+  document.getElementById('stat-total-sales').textContent  = totalQty.toLocaleString('id-ID');
+  document.getElementById('stat-today-sales').textContent  = todayQty.toLocaleString('id-ID');
+  document.getElementById('stat-pending').textContent      = d.pending_orders ?? 0;
+  document.getElementById('stat-low-stock').textContent    = d.low_stock_products ?? (d.low_stock_products ?? 0);
+}
+
+function renderOrderBreakdown(breakdown) {
+  const el = document.getElementById('order-breakdown');
+  const statuses = ['pending','processing','shipped','confirmed','cancelled'];
+  if (!Object.keys(breakdown).length) {
+    el.innerHTML = '<p class="admin-empty" style="padding:1.5rem"><i class="bi bi-inbox"></i><br>Belum ada pesanan</p>';
+    return;
+  }
+  el.innerHTML = statuses.map(s => {
+    const count = breakdown[s] || 0;
+    const info = { pending:'Menunggu', confirmed:'Dikonfirmasi', processing:'Diproses', shipped:'Dikirim', delivered:'Diterima', cancelled:'Dibatalkan' };
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.45rem 0;border-bottom:1px solid #f0f0f0">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          ${statusBadge(s)}
+        </div>
+        <span style="font-weight:700;font-size:0.9rem">${count}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSalesChart(chartData) {
+  const labels = chartData.map(d => d.date || d.label);
+  const values = chartData.map(d => Number(d.total) || 0);
+
+  const ctx = document.getElementById('sales-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+      label: 'Jumlah Terjual (pcs)',
+      data: values,
+        backgroundColor: 'rgba(201,168,76,0.65)',
+        borderColor: '#C9A84C',
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => Number(ctx.raw).toLocaleString('id-ID') + ' pcs'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => Number(v).toLocaleString('id-ID'),
+            font: { size: 11 }
+          },
+          grid: { color: '#F0F0F0' }
+        },
+        x: {
+          ticks: { font: { size: 11 } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderRecentOrders(orders) {
+  const el = document.getElementById('recent-orders-wrap');
+  if (!orders.length) {
+    el.innerHTML = '<p class="admin-empty"><i class="bi bi-inbox"></i><br>Belum ada pesanan</p>';
+    return;
+  }
+  el.innerHTML = `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>No. Pesanan</th>
+          <th>Pelanggan</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Tanggal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${orders.map(o => `
+          <tr>
+            <td><a href="orders" style="color:var(--admin-gold);font-weight:600;font-size:0.82rem">${escA(o.order_number || o.id)}</a></td>
+            <td style="font-size:0.82rem">${escA(o.customer_name || '—')}</td>
+            <td style="font-size:0.82rem;font-weight:600">${fmtRp(o.total_amount || o.total)}</td>
+            <td>${statusBadge(o.status)}</td>
+            <td style="font-size:0.78rem;color:#888">${fmtDate(o.created_at)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderLowStock(items) {
+  const el = document.getElementById('low-stock-wrap');
+  if (!items.length) {
+    el.innerHTML = '<p class="admin-empty" style="padding:1.5rem"><i class="bi bi-check-circle" style="color:#388e3c"></i><br><small>Semua stok aman</small></p>';
+    return;
+  }
+  el.innerHTML = `
+    <table class="admin-table">
+      <thead><tr><th>Produk</th><th>Stok</th></tr></thead>
+      <tbody>
+        ${items.map(i => `
+          <tr>
+            <td style="font-size:0.82rem">${escA(i.name)}${i.variant_name ? ` <small style="color:#888">(${escA(i.variant_name)})</small>` : ''}</td>
+            <td><span style="color:var(--admin-danger);font-weight:700;font-size:0.85rem">${i.stock ?? i.total_stock ?? '—'}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+</script>
+</body>
+</html>

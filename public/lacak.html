@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lacak Pesanan — Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/theme.css" rel="stylesheet" />
+  <style>
+    .tracking-wrapper {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    /* Timeline / Stepper */
+    .tracking-timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 3rem;
+      padding-top: 1rem;
+    }
+    .tracking-timeline::before {
+      content: '';
+      position: absolute;
+      top: 26px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: var(--border-subtle);
+      z-index: 1;
+    }
+    .tracking-timeline-progress {
+      position: absolute;
+      top: 26px;
+      left: 10%;
+      width: 0%;
+      height: 2px;
+      background: var(--ink);
+      z-index: 2;
+      transition: width 0.4s var(--ease-out);
+    }
+    .tracking-step {
+      width: 20%;
+      text-align: center;
+      position: relative;
+      z-index: 3;
+    }
+    .tracking-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1.5px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+      font-size: 0.95rem;
+      color: var(--ink-muted);
+      transition: all 0.2s ease;
+    }
+    .tracking-step.active .tracking-icon {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+    }
+    .tracking-step.completed .tracking-icon {
+      border-color: var(--status-success);
+      background: var(--status-success);
+      color: #fff;
+    }
+    .tracking-label {
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .tracking-step.active .tracking-label {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .tracking-step.completed .tracking-label {
+      color: var(--status-success);
+    }
+    .tracking-details-card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 2.2rem;
+      margin-top: 2rem;
+    }
+    .lacak-search-box {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-pill);
+      padding: 0.35rem 0.5rem 0.35rem 1.4rem;
+      display: flex;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s ease;
+    }
+    .lacak-search-box:focus-within {
+      border-color: var(--ink);
+    }
+    .lacak-search-box input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 0.92rem;
+      color: var(--ink);
+    }
+    .lacak-search-box button {
+      border-radius: var(--radius-pill);
+      padding: 0.55rem 1.6rem;
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top navbar-albi">
+  <div class="container">
+    <a class="brand-name me-auto" href="./">Albi <span>Parfum</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><a class="nav-link-albi" href="./">Beranda</a></li>
+        <li class="nav-item"><a class="nav-link-albi" href="katalog">Katalog</a></li>
+        <li class="nav-item"><a class="nav-link-albi active" href="lacak">Lacak Pesanan</a></li>
+        <li class="nav-item">
+          <a class="nav-link-albi position-relative px-2" href="cart" aria-label="Keranjang Belanja">
+            <i class="bi bi-bag" style="font-size:1.15rem"></i>
+            <span class="cart-badge d-none" id="cart-badge-val">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title">Lacak Pesanan</h2>
+      <p class="section-subtitle" style="max-width:520px;margin:0 auto">Masukkan nomor pesanan Anda untuk memantau status pengiriman secara berkala.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="lacak-search-box mb-4">
+          <input type="text" id="order-search-input" placeholder="Contoh: ORD-20261015-00001" />
+          <button class="btn-primary-albi" id="btn-search-order">Lacak Status</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tracking-wrapper">
+      <div id="tracking-loading" class="text-center d-none py-5">
+        <div class="spinner-border text-gold" style="color:var(--gold-main)" role="status">
+          <span class="visually-hidden">Memuat…</span>
+        </div>
+        <p class="text-muted mt-2">Mencari pesanan…</p>
+      </div>
+
+      <div id="tracking-error" class="alert alert-danger d-none text-center" role="alert">
+        Nomor pesanan tidak ditemukan atau format salah. Silakan periksa kembali.
+      </div>
+
+      <!-- TRACKING RESULT AREA -->
+      <div id="tracking-result" class="d-none">
+        
+        <!-- Timeline status -->
+        <div class="tracking-timeline" id="status-timeline">
+          <div class="tracking-timeline-progress" id="timeline-progress"></div>
+          
+          <div class="tracking-step" id="step-pending">
+            <div class="tracking-icon"><i class="bi bi-clock"></i></div>
+            <div class="tracking-label">Pending</div>
+          </div>
+          
+          <div class="tracking-step" id="step-processing">
+            <div class="tracking-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="tracking-label">Diproses</div>
+          </div>
+          
+          <div class="tracking-step" id="step-shipped">
+            <div class="tracking-icon"><i class="bi bi-truck"></i></div>
+            <div class="tracking-label">Dikirim</div>
+          </div>
+          
+          <div class="tracking-step" id="step-delivered">
+            <div class="tracking-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="tracking-label">Diterima</div>
+          </div>
+        </div>
+
+        <div id="cancelled-alert" class="alert alert-danger d-none text-center py-3 mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Pesanan ini telah Dibatalkan</strong>
+        </div>
+
+        <!-- Order Detail Card -->
+        <div class="tracking-details-card">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 pb-3 border-bottom">
+            <div>
+              <h4 class="mb-1" id="res-order-number" style="font-family:'Playfair Display',serif;color:var(--gold-dark)">ORD-XXXX</h4>
+              <p class="text-muted small mb-0" id="res-order-date">Tanggal Pemesanan: -</p>
+            </div>
+            <div>
+              <span class="badge-new bg-gold-gradient px-3 py-2 text-white" id="res-status-badge">PENDING</span>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <!-- Informasi Pengiriman -->
+            <div class="col-12 col-md-6">
+              <h5 class="fw-bold mb-3" style="font-size:0.95rem;color:var(--gold-dark)"><i class="bi bi-geo-alt-fill me-1"></i>Informasi Pengiriman</h5>
+              <table class="w-100" style="font-size:0.88rem;line-height:1.8">
+                <tr><td class="text-muted" style="width:120px">Penerima</td><td id="res-name" class="fw-semibold">-</td></tr>
+                <tr><td class="text-muted">Telepon</td><td id="res-phone">-</td></tr>
+                <tr><td class="text-muted">Alamat</td><td id="res-address">-</td></tr>
+                <tr><td class="text-muted">Kurir</td><td id="res-courier">-</td></tr>
+                <tr id="row-resi" class="d-none"><td class="text-muted">Nomor Resi</td><td id="res-resi" class="fw-bold text-success">-</td></tr>
+              </table>
+            </div>
+
+            <!-- Ringkasan Pembayaran -->
+            <div class="col-12 col-md-6">
+              <h5 class="fw-bold mb-3" style="font-size:0.95rem;color:var(--gold-dark)"><i class="bi bi-credit-card-fill me-1"></i>Ringkasan Pembayaran</h5>
+              <table class="w-100" style="font-size:0.88rem;line-height:1.8">
+                <tr><td class="text-muted" style="width:120px">Metode Bayar</td><td id="res-payment-method" style="text-transform:uppercase">-</td></tr>
+                <tr><td class="text-muted">Status Bayar</td><td id="res-payment-status" style="text-transform:capitalize">-</td></tr>
+                <tr><td class="text-muted">Subtotal</td><td id="res-subtotal">-</td></tr>
+                <tr><td class="text-muted">Ongkos Kirim</td><td id="res-shipping-cost">-</td></tr>
+                <tr class="border-top"><td class="fw-bold" style="padding-top:8px">Total Akhir</td><td id="res-total" class="fw-bold text-gold" style="color:var(--gold-main);font-size:1.05rem;padding-top:8px">-</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Items list -->
+          <div class="mt-4 pt-4 border-top">
+            <h5 class="fw-bold mb-3" style="font-size:0.95rem;color:var(--gold-dark)"><i class="bi bi-bag-check-fill me-1"></i>Daftar Item</h5>
+            <div id="res-items-container"></div>
+          </div>
+        </div>
+
+      </div><!-- #tracking-result -->
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">Albi <span>Parfum</span></div>
+        <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
+      </div>
+      <div class="col-6 col-md-2">
+        <h6>Navigasi</h6>
+        <a href="./">Beranda</a>
+        <a href="katalog">Katalog</a>
+        <a href="cart">Keranjang</a>
+      </div>
+      <div class="col-6 col-md-3">
+        <h6>Bantuan</h6>
+        <a href="pages/cara-pemesanan">Cara Pemesanan</a>
+        <a href="pages/pengiriman">Pengiriman</a>
+        <a href="pages/kebijakan-retur">Kebijakan Retur</a>
+      </div>
+      <div class="col-12 col-md-3">
+        <h6>Kontak</h6>
+        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
+      </div>
+    </div>
+    <hr class="footer-divider" />
+    <p class="footer-copy">&copy; 2025 Toko Albi Parfum. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    Cart._notifyBadge();
+    
+    // Check URL parameters for auto search
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderNo = urlParams.get('id');
+    if (orderNo) {
+      document.getElementById('order-search-input').value = orderNo;
+      trackOrder(orderNo);
+    }
+
+    document.getElementById('btn-search-order').addEventListener('click', () => {
+      const val = document.getElementById('order-search-input').value.trim();
+      if (val) {
+        // change URL parameter silently without reload
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + encodeURIComponent(val);
+        window.history.pushState({path:newUrl}, '', newUrl);
+        trackOrder(val);
+      }
+    });
+
+    document.getElementById('order-search-input').addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-search-order').click();
+      }
+    });
+  });
+
+  async function trackOrder(orderNo) {
+    const loading = document.getElementById('tracking-loading');
+    const errorEl = document.getElementById('tracking-error');
+    const result  = document.getElementById('tracking-result');
+
+    loading.classList.remove('d-none');
+    errorEl.classList.add('d-none');
+    result.classList.add('d-none');
+
+    try {
+      // Endpoint track order public
+      const res = await axios.get(resolveAssetUrl(`/api/orders/track/${orderNo}`));
+      const order = res.data.data || res.data;
+      renderOrderTracking(order);
+    } catch(err) {
+      errorEl.classList.remove('d-none');
+    } finally {
+      loading.classList.add('d-none');
+    }
+  }
+
+  function renderOrderTracking(o) {
+    const result = document.getElementById('tracking-result');
+    result.classList.remove('d-none');
+
+    // Set text elements
+    document.getElementById('res-order-number').textContent = o.order_number || o.id;
+    document.getElementById('res-order-date').textContent = `Tanggal Pemesanan: ${fmtDateTime(o.created_at)}`;
+    
+    // Status Badge
+    const statusLabels = {
+      pending: 'PENDING',
+      processing: 'DIPROSES',
+      shipped: 'DIKIRIM',
+      delivered: 'DITERIMA',
+      cancelled: 'DIBATALKAN'
+    };
+    const badge = document.getElementById('res-status-badge');
+    badge.textContent = statusLabels[o.status] || o.status.toUpperCase();
+    badge.className = 'badge-new bg-gold-gradient px-3 py-2 text-white';
+    if (o.status === 'cancelled') {
+      badge.classList.remove('bg-gold-gradient');
+      badge.classList.add('bg-danger');
+    }
+
+    // Shipping info
+    document.getElementById('res-name').textContent = o.customer_name;
+    document.getElementById('res-phone').textContent = o.customer_phone;
+    document.getElementById('res-address').textContent = `${o.shipping_address}, ${o.shipping_city}, ${o.shipping_province} ${o.shipping_postal_code || ''}`;
+    
+    const courierText = o.shipping_courier 
+      ? `${o.shipping_courier.toUpperCase()} ${o.shipping_service ? `(${o.shipping_service})` : ''}` 
+      : '—';
+    document.getElementById('res-courier').textContent = courierText;
+
+    // Resi / Tracking number
+    const rowResi = document.getElementById('row-resi');
+    if (o.tracking_number) {
+      rowResi.classList.remove('d-none');
+      document.getElementById('res-resi').textContent = o.tracking_number;
+    } else {
+      rowResi.classList.add('d-none');
+    }
+
+    // Payment Info
+    document.getElementById('res-payment-method').textContent = o.payment_method;
+    document.getElementById('res-payment-status').textContent = o.payment_status;
+    document.getElementById('res-subtotal').textContent = formatRupiah(o.subtotal);
+    document.getElementById('res-shipping-cost').textContent = formatRupiah(o.shipping_cost);
+    document.getElementById('res-total').textContent = formatRupiah(o.total_amount);
+
+    // Items list
+    const itemsContainer = document.getElementById('res-items-container');
+    itemsContainer.innerHTML = (o.items || []).map(i => {
+      const img = resolveAssetUrl(i.product_thumbnail || '');
+      const imgHtml = img 
+        ? `<img src="${img}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #eee;flex-shrink:0" />`
+        : `<div style="width:50px;height:50px;border-radius:8px;background:#f5f0e8;border:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#c9a84c;flex-shrink:0"><i class="bi bi-droplet-fill"></i></div>`;
+
+      return `
+        <div class="d-flex align-items-center gap-3 py-3 border-bottom last-border-none">
+          ${imgHtml}
+          <div style="flex:1;min-width:0">
+            <h6 class="mb-0 fw-semibold" style="font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(i.product_name)}</h6>
+            <p class="text-muted small mb-0">${i.variant_name ? `Ukuran: ${escHtml(i.variant_name)}` : ''}</p>
+          </div>
+          <div class="text-end">
+            <span class="text-muted small" style="display:block">${formatRupiah(i.unit_price)} &times; ${i.quantity}</span>
+            <span class="fw-semibold" style="font-size:0.88rem;color:var(--gold-dark)">${formatRupiah(i.subtotal)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Setup timeline stepper
+    const steps = ['pending', 'processing', 'shipped', 'delivered'];
+    const pSteps = {
+      pending: 0,
+      processing: 33.33,
+      shipped: 66.66,
+      delivered: 100
+    };
+
+    // Reset styles
+    steps.forEach(s => {
+      const el = document.getElementById(`step-${s}`);
+      el.classList.remove('completed', 'active');
+    });
+    document.getElementById('cancelled-alert').classList.add('d-none');
+    document.getElementById('status-timeline').classList.remove('d-none');
+
+    if (o.status === 'cancelled') {
+      document.getElementById('status-timeline').classList.add('d-none');
+      document.getElementById('cancelled-alert').classList.remove('d-none');
+    } else {
+      const curIdx = steps.indexOf(o.status);
+      if (curIdx > -1) {
+        // Set completed steps
+        for (let i = 0; i < curIdx; i++) {
+          document.getElementById(`step-${steps[i]}`).classList.add('completed');
+        }
+        // Set active step
+        document.getElementById(`step-${o.status}`).classList.add('active');
+        // Set progress bar
+        document.getElementById('timeline-progress').style.width = `${pSteps[o.status]}%`;
+      }
+    }
+  }
+
+  function fmtDateTime(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleString('id-ID', {
+      day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+  }
+
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+</script>
+</body>
+</html>

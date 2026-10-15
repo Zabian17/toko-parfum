@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produk — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet" />
+  <style>
+    .tier-row{display:flex;align-items:center;gap:1rem;padding:.6rem .8rem;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:.5rem;background:#fafafa}
+    .tier-grade-badge{font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;white-space:nowrap}
+    .tier-grade-premium{background:#FFF8E1;color:#b8860b}
+    .tier-grade-super{background:#F3E5F5;color:#6a1b9a}
+    .tier-price-label{font-size:.78rem;color:#888;min-width:90px}
+    .tier-stock-wrap{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+  </style>
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <!-- Toolbar -->
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <div class="admin-search" style="flex:1;min-width:200px;max-width:320px">
+          <input type="text" id="search-input" placeholder="Cari nama aroma…" />
+          <button id="search-btn"><i class="bi bi-search"></i></button>
+        </div>
+        <select id="filter-category" class="admin-form-control" style="width:auto">
+          <option value="">Semua Kategori</option>
+        </select>
+        <select id="filter-active" class="admin-form-control" style="width:auto">
+          <option value="">Semua Status</option>
+          <option value="1">Aktif</option>
+          <option value="0">Nonaktif</option>
+        </select>
+        <button class="btn-admin-gold ms-auto" id="btn-add"><i class="bi bi-plus-lg"></i> Tambah Aroma</button>
+      </div>
+
+      <!-- Table -->
+      <div class="admin-card">
+        <div id="products-table"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD / EDIT MODAL ===== -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title">Tambah Aroma</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" novalidate>
+          <input type="hidden" id="form-id" />
+
+          <div class="row g-3">
+            <!-- Name -->
+            <div class="col-12 col-md-8">
+              <label class="admin-form-label">Nama Aroma <span class="text-danger">*</span></label>
+              <input type="text" id="form-name" class="admin-form-control" required placeholder="cth: Midnight Velvet" />
+            </div>
+            <!-- Category -->
+            <div class="col-12 col-md-4">
+              <label class="admin-form-label">Kategori <span class="text-danger">*</span></label>
+              <select id="form-category" class="admin-form-control" required>
+                <option value="">&#x2014; Pilih &#x2014;</option>
+              </select>
+            </div>
+            <!-- Slug -->
+            <div class="col-12 col-md-8">
+              <label class="admin-form-label">Slug URL</label>
+              <input type="text" id="form-slug" class="admin-form-control" placeholder="otomatis dari nama" />
+              <small class="text-muted">Kosongkan agar dibuat otomatis</small>
+            </div>
+            <!-- Flags -->
+            <div class="col-12 col-md-4 d-flex align-items-center gap-4 pt-3">
+              <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:.87rem">
+                <input type="checkbox" id="form-active" class="form-check-input m-0" checked /> Aktif
+              </label>
+              <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:.87rem">
+                <input type="checkbox" id="form-featured" class="form-check-input m-0" /> Unggulan
+              </label>
+            </div>
+            <!-- Short Description -->
+            <div class="col-12">
+              <label class="admin-form-label">Deskripsi Singkat</label>
+              <input type="text" id="form-short-desc" class="admin-form-control" maxlength="500" placeholder="Maks. 500 karakter" />
+            </div>
+            <!-- Description -->
+            <div class="col-12">
+              <label class="admin-form-label">Deskripsi</label>
+              <textarea id="form-desc" class="admin-form-control" rows="4" placeholder="Deskripsi lengkap aroma…"></textarea>
+            </div>
+            <!-- Tags -->
+            <div class="col-12">
+              <label class="admin-form-label">Tags <small style="color:#888">(pisahkan dengan koma)</small></label>
+              <input type="text" id="form-tags" class="admin-form-control" placeholder="oud, floral, fresh" />
+            </div>
+          </div>
+
+          <!-- Tier Variants -->
+          <hr class="my-3" />
+          <div class="mb-2">
+            <p class="fw-semibold mb-1" style="font-size:.88rem">Stok per Ukuran &amp; Grade</p>
+            <p class="text-muted small mb-2">Harga sudah ditentukan oleh tabel size. Isi stok yang tersedia.</p>
+          </div>
+          <div id="tiers-loading" class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Memuat tier…</div>
+          <div id="tier-rows"></div>
+
+          <!-- Thumbnail -->
+          <hr class="my-3" />
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="admin-form-label">Thumbnail</label>
+              <div id="thumb-dropzone" style="border:2px dashed #ddd;border-radius:8px;padding:.9rem;text-align:center;cursor:pointer;background:#fafafa;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <i class="bi bi-image" style="font-size:1.4rem;color:#bbb"></i>
+                <span style="font-size:.77rem;color:#999">Drag &amp; drop atau <u>pilih file</u></span>
+                <input type="file" id="form-thumbnail" accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none" />
+              </div>
+              <div id="thumb-preview" class="mt-2"></div>
+            </div>
+          </div>
+
+          <!-- Gallery -->
+          <hr class="my-3" />
+          <p class="fw-semibold mb-2" style="font-size:.88rem">Galeri Foto</p>
+          <div id="images-preview" class="d-flex flex-wrap gap-2 mb-2"></div>
+          <div id="gallery-dropzone" style="border:2px dashed #ddd;border-radius:8px;padding:1.1rem;text-align:center;cursor:pointer;background:#fafafa">
+            <i class="bi bi-cloud-arrow-up" style="font-size:1.6rem;color:#bbb"></i>
+            <div style="font-size:.81rem;color:#999;margin-top:4px">Drag &amp; drop atau</div>
+            <label style="cursor:pointer;margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:.78rem;padding:.35rem .8rem;border:1px solid #ddd;border-radius:5px;background:#fff" onclick="event.stopPropagation()">
+              <i class="bi bi-folder2-open"></i> Pilih Gambar
+              <input type="file" id="form-images" multiple accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none" />
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-admin-gold" id="btn-save">
+          <span id="save-text">Simpan</span>
+          <span class="spinner-border spinner-border-sm d-none" id="save-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Hapus Aroma</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" style="font-size:.88rem">Yakin hapus <strong id="delete-product-name"></strong>? Tidak dapat dibatalkan.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-admin-danger" id="btn-confirm-delete">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+// ── Init ──────────────────────────────────────────────────────────────────────
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pageInit);
+} else {
+  pageInit();
+}
+
+function pageInit() {
+  if (!AdminAuth.requireAuth()) return;
+  if (!AdminAuth.hasPermission('products')) { location.href = 'dashboard'; return; }
+  AdminAuth.buildLayout('Kelola Produk', 'products');
+  loadCategories();
+  initTable();
+  bindEvents();
+}
+
+const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+const deleteModal  = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+let editingId = null, deletingId = null;
+let categories = [], allTiers = [];
+let table = null;
+let pendingThumbnailFile = null, pendingDeleteThumbnail = false;
+let pendingImagesToDelete = [], newGalleryFiles = [];
+
+// ── Load helpers ──────────────────────────────────────────────────────────────
+async function loadCategories() {
+  try {
+    const res = await adminApi.get('/categories');
+    categories = res.data.data || res.data;
+    const filterSel = document.getElementById('filter-category');
+    const formSel   = document.getElementById('form-category');
+    categories.forEach(c => {
+      filterSel.add(new Option(c.name, c.id));
+      formSel.add(new Option(c.name, c.id));
+    });
+  } catch(e) {}
+}
+
+async function loadTiers() {
+  if (allTiers.length) return;
+  try {
+    // Public endpoint, no auth required
+    const res = await axios.get('/api/product-tiers');
+    allTiers  = res.data.data || [];
+  } catch(e) { allTiers = []; }
+}
+
+function initTable() {
+  table = new Tabulator('#products-table', {
+    ajaxURL: '/api/admin/products',
+    ajaxRequestFunc: function(url, config, params) {
+      const p = { page: params.page || 1, per_page: params.size || 10 };
+      const remoteFilters = params.filter || params.filters || [];
+      const remoteSorters = params.sort || params.sorters || [];
+      const search    = document.getElementById('search-input').value.trim();
+      const catId     = document.getElementById('filter-category').value;
+      const isActive  = document.getElementById('filter-active').value;
+      if (search)   p.search      = search;
+      if (catId)    p.category_id = catId;
+      if (isActive !== '') p.is_active = isActive;
+      if (remoteFilters.length) p.filters = JSON.stringify(remoteFilters);
+      if (remoteSorters.length) p.sorters = JSON.stringify(remoteSorters);
+      return axios.get(url, {
+        headers: { 'Authorization': 'Bearer ' + AdminAuth.token(), 'Accept': 'application/json' },
+        params: p,
+      }).then(function(res) {
+        const r = res.data;
+        return { data: r.data ?? r, last_page: r.meta?.last_page ?? r.last_page ?? 1 };
+      });
+    },
+    pagination: true,
+    paginationMode: 'remote',
+    filterMode: 'remote',
+    sortMode: 'remote',
+    paginationSize: 20,
+    paginationSizeSelector: [10, 20, 50],
+    layout: 'fitColumns',
+    resizableColumns: true,
+    locale: true,
+    langs: { 'default': { pagination: { first:'«', prev:'‹', next:'›', last:'»' } } },
+    columns: [
+      {
+        title: '', field: 'thumbnail', width: 56, resizable: false, hozAlign: 'center',
+        formatter: function(cell) {
+          const v = cell.getValue();
+          if (v) return `<img src="${resolveAssetUrl(v)}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid #eee" loading="lazy" />`;
+          return `<div style="width:36px;height:36px;border-radius:6px;background:#f5f0e8;border:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#c9a84c"><i class="bi bi-droplet-fill"></i></div>`;
+        }
+      },
+      {
+        title: 'Nama Aroma', field: 'name', minWidth: 100,
+        headerFilter: 'input',
+        formatter: function(cell) {
+          const row = cell.getRow().getData();
+          return `<div style="font-weight:600;font-size:.85rem">${escA(row.name)}</div><div style="font-size:.72rem;color:#aaa">${escA(row.category?.name || '—')}</div>`;
+        }
+      },
+      {
+        title: 'Harga', field: 'min_price', width: 160,
+        headerFilter: 'input',
+        formatter: function(cell) {
+          const v = cell.getValue();
+          return v != null ? `<span style="color:#9a7b2f;font-weight:600">Mulai ${fmtRp(v)}</span>` : '<span class="text-muted">—</span>';
+        }
+      },
+      {
+        title: 'Stok', field: 'variants', width: 120, hozAlign: 'center',
+        formatter: function(cell) {
+          const variants = cell.getValue() || [];
+          const total = variants.reduce((s, v) => s + (v.is_active ? (v.stock || 0) : 0), 0);
+          const cls = total <= 0 ? 'text-danger' : (total < 10 ? 'text-warning fw-semibold' : 'fw-semibold');
+          return `<span class="${cls}">${total}</span>`;
+        }
+      },
+      {
+        title: 'Status', field: 'is_active', width: 120, hozAlign: 'center',
+        headerFilter: 'list',
+        headerFilterParams: { values: { '': 'Semua', true: 'Aktif', false: 'Nonaktif' } },
+        formatter: function(cell) { return activeBadge(cell.getValue()); }
+      },
+      {
+        title: '', field: 'id', width: 120, hozAlign: 'center', resizable: false,
+        formatter: function(cell) {
+          const row = cell.getRow().getData();
+          return `<div class="d-flex gap-1 justify-content-center">
+            <button class="btn-action btn-edit" data-id="${row.id}" title="Edit"><i class="bi bi-pencil"></i></button>
+            <button class="btn-action btn-delete" data-id="${row.id}" data-name="${escA(row.name)}" title="Hapus"><i class="bi bi-trash3"></i></button>
+          </div>`;
+        },
+        cellClick: function(e, cell) {
+          const editBtn   = e.target.closest('.btn-edit');
+          const deleteBtn = e.target.closest('.btn-delete');
+          if (editBtn)   openEdit(parseInt(editBtn.dataset.id));
+          if (deleteBtn) openDelete(parseInt(deleteBtn.dataset.id), deleteBtn.dataset.name);
+        }
+      }
+    ]
+  });
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+function bindEvents() {
+  const doSearch = debounce(() => table && table.setData(), 400);
+  document.getElementById('search-input').addEventListener('input', doSearch);
+  document.getElementById('search-btn').addEventListener('click', () => table && table.setData());
+  document.getElementById('filter-category').addEventListener('change', () => table && table.setData());
+  document.getElementById('filter-active').addEventListener('change', () => table && table.setData());
+
+  document.getElementById('btn-add').addEventListener('click', () => openModal());
+
+  document.getElementById('form-name').addEventListener('input', e => {
+    if (!editingId) document.getElementById('form-slug').value = slugify(e.target.value);
+  });
+
+  // Thumbnail drag-drop
+  const thumbDz  = document.getElementById('thumb-dropzone');
+  const thumbInp = document.getElementById('form-thumbnail');
+  thumbDz.addEventListener('click', () => thumbInp.click());
+  thumbDz.addEventListener('dragover',  e => { e.preventDefault(); thumbDz.style.borderColor='#C9A84C'; });
+  thumbDz.addEventListener('dragleave', ()  => thumbDz.style.borderColor='#ddd');
+  thumbDz.addEventListener('drop', e => {
+    e.preventDefault(); thumbDz.style.borderColor='#ddd';
+    const f = e.dataTransfer.files[0];
+    if (f?.type.startsWith('image/')) { pendingThumbnailFile = f; readThumb(f); }
+  });
+  thumbInp.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) { pendingThumbnailFile = f; readThumb(f); }
+    thumbInp.value = '';
+  });
+
+  // Gallery drag-drop
+  const galleryDz  = document.getElementById('gallery-dropzone');
+  const galleryInp = document.getElementById('form-images');
+  galleryDz.addEventListener('dragover',  e => { e.preventDefault(); galleryDz.style.borderColor='#C9A84C'; });
+  galleryDz.addEventListener('dragleave', ()  => galleryDz.style.borderColor='#ddd');
+  galleryDz.addEventListener('drop', e => {
+    e.preventDefault(); galleryDz.style.borderColor='#ddd';
+    Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).forEach(addNewGalleryFile);
+  });
+  galleryDz.addEventListener('click', e => { if (!e.target.closest('label')) galleryInp.click(); });
+  galleryInp.addEventListener('change', e => {
+    Array.from(e.target.files).forEach(addNewGalleryFile);
+    galleryInp.value = '';
+  });
+
+  document.getElementById('btn-save').addEventListener('click', saveProduct);
+  document.getElementById('btn-confirm-delete').addEventListener('click', confirmDelete);
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+async function openModal(data = null) {
+  editingId = data?.id || null;
+  pendingThumbnailFile = null; pendingDeleteThumbnail = false;
+  pendingImagesToDelete = []; newGalleryFiles = [];
+
+  document.getElementById('modal-title').textContent  = data ? 'Edit Aroma' : 'Tambah Aroma';
+  document.getElementById('form-id').value            = data?.id || '';
+  document.getElementById('form-name').value          = data?.name || '';
+  document.getElementById('form-slug').value          = data?.slug || '';
+  document.getElementById('form-short-desc').value    = data?.short_description || '';
+  document.getElementById('form-desc').value          = data?.description || '';
+  document.getElementById('form-tags').value          = (data?.tags || []).map(t => t.name || t).join(', ');
+  document.getElementById('form-active').checked      = data ? !!data.is_active : true;
+  document.getElementById('form-featured').checked    = !!data?.is_featured;
+  document.getElementById('form-category').value      = data?.category?.id || data?.category_id || '';
+
+  // Thumbnail
+  document.getElementById('thumb-preview').innerHTML  = '';
+  document.getElementById('thumb-dropzone').style.display = '';
+  if (data?.thumbnail) showThumbPreview(resolveAssetUrl(data.thumbnail), true);
+
+  // Gallery
+  document.getElementById('images-preview').innerHTML = '';
+  (data?.images || []).forEach(img => {
+    addGalleryPreview(resolveAssetUrl(img.image_url || img.url || img), img.id || null, null);
+  });
+
+  // Tier rows
+  await buildTierRows(data?.variants || []);
+
+  productModal.show();
+}
+
+async function buildTierRows(existingVariants) {
+  const rowsEl = document.getElementById('tier-rows');
+  const loadEl = document.getElementById('tiers-loading');
+  rowsEl.innerHTML = '';
+  loadEl.classList.remove('d-none');
+
+  await loadTiers();
+  loadEl.classList.add('d-none');
+
+  if (!allTiers.length) {
+    rowsEl.innerHTML = '<p class="text-muted small">Tier tidak ditemukan.</p>';
+    return;
+  }
+
+  allTiers.forEach(tier => {
+    const existing   = existingVariants.find(v => (v.tier_id ?? v.tier?.id) === tier.id);
+    const stock      = existing?.stock ?? 0;
+    const isActive   = existing != null ? !!existing.is_active : true;
+    const gradeClass = tier.grade === 'premium' ? 'tier-grade-premium' : 'tier-grade-super';
+    const gradeLabel = tier.grade === 'premium' ? 'Premium' : 'Super Premium';
+
+    const row        = document.createElement('div');
+    row.className    = 'tier-row';
+    row.dataset.tierId = tier.id;
+    row.innerHTML    = `
+      <span class="tier-grade-badge ${gradeClass}">${gradeLabel}</span>
+      <span style="font-size:.82rem;font-weight:600;min-width:40px">${tier.size_ml}ml</span>
+      <span class="tier-price-label">${fmtRp(tier.price)}</span>
+      <div class="tier-stock-wrap">
+        <label style="font-size:.77rem;color:#888;white-space:nowrap">Stok:</label>
+        <input type="number" class="admin-form-control tier-stock-input"
+               style="width:80px;padding:.3rem .5rem;font-size:.82rem" min="0" value="${stock}" />
+      </div>
+      <div class="form-check form-switch ms-2 mb-0">
+        <input class="form-check-input tier-active-input" type="checkbox" ${isActive ? 'checked' : ''} title="Aktif" />
+      </div>
+    `;
+    rowsEl.appendChild(row);
+  });
+}
+
+function getTierVariants() {
+  return Array.from(document.querySelectorAll('#tier-rows .tier-row')).map(row => ({
+    tier_id:   parseInt(row.dataset.tierId),
+    stock:     parseInt(row.querySelector('.tier-stock-input').value) || 0,
+    is_active: row.querySelector('.tier-active-input').checked,
+  }));
+}
+
+async function openEdit(id) {
+  try {
+    const res = await adminApi.get(`/products/${id}`);
+    openModal({ ...(res.data.data || res.data), id });
+  } catch(e) { showAlert('Gagal memuat data produk.', 'error'); }
+}
+
+function openDelete(id, name) {
+  deletingId = id;
+  document.getElementById('delete-product-name').textContent = name;
+  deleteModal.show();
+}
+
+async function confirmDelete() {
+  try {
+    await adminApi.delete(`/products/${deletingId}`);
+    deleteModal.hide();
+    showAlert('Produk berhasil dihapus.');
+    table.setData();
+  } catch(e) { showAlert('Gagal menghapus produk.', 'error'); }
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+async function saveProduct() {
+  const name       = document.getElementById('form-name').value.trim();
+  const categoryId = document.getElementById('form-category').value;
+
+  if (!name || !categoryId) {
+    showAlert('Nama aroma dan kategori wajib diisi.', 'error');
+    return;
+  }
+
+  setSaving(true);
+
+  const fd = new FormData();
+  fd.append('name',              name);
+  const slug = document.getElementById('form-slug').value.trim();
+  if (slug) fd.append('slug', slug);
+  fd.append('category_id',       categoryId);
+  fd.append('description',       document.getElementById('form-desc').value.trim());
+  fd.append('short_description', document.getElementById('form-short-desc').value.trim());
+  fd.append('is_active',         document.getElementById('form-active').checked ? 1 : 0);
+  fd.append('is_featured',       document.getElementById('form-featured').checked ? 1 : 0);
+
+  // Tags
+  const tagsRaw = document.getElementById('form-tags').value.trim();
+  if (tagsRaw) {
+    tagsRaw.split(',').map(t => t.trim()).filter(Boolean).forEach((t, i) => fd.append(`tags[${i}]`, t));
+  }
+
+  // Thumbnail
+  if (pendingThumbnailFile)       fd.append('thumbnail', pendingThumbnailFile);
+  else if (pendingDeleteThumbnail) fd.append('delete_thumbnail', '1');
+
+  // Gallery
+  newGalleryFiles.forEach((f, i) => fd.append(`images[${i}]`, f));
+
+  // Tier variants
+  getTierVariants().forEach((v, i) => {
+    fd.append(`variants[${i}][tier_id]`,   v.tier_id);
+    fd.append(`variants[${i}][stock]`,     v.stock);
+    fd.append(`variants[${i}][is_active]`, v.is_active ? 1 : 0);
+  });
+
+  try {
+    const headers = {
+      'Authorization': `Bearer ${AdminAuth.token()}`,
+      'Accept': 'application/json',
+    };
+    if (editingId) {
+      fd.append('_method', 'PUT');
+      await axios.post(`/api/admin/products/${editingId}`, fd, { headers });
+    } else {
+      await axios.post('/api/admin/products', fd, { headers });
+    }
+
+    // Delete removed gallery images
+    for (const imgId of pendingImagesToDelete) {
+      try { await adminApi.delete(`/product-images/${imgId}`); } catch(_) {}
+    }
+
+    productModal.hide();
+    showAlert(editingId ? 'Aroma berhasil diperbarui.' : 'Aroma berhasil ditambahkan.');
+    table.setData();
+  } catch(e) {
+    const errors = e.response?.data?.errors;
+    const msg    = errors
+      ? Object.values(errors).flat().join('; ')
+      : (e.response?.data?.message || 'Gagal menyimpan produk.');
+    showAlert(msg, 'error');
+  } finally {
+    setSaving(false);
+  }
+}
+
+function setSaving(on) {
+  document.getElementById('save-text').classList.toggle('d-none', on);
+  document.getElementById('save-spinner').classList.toggle('d-none', !on);
+  document.getElementById('btn-save').disabled = on;
+}
+
+// ── Thumbnail helpers ─────────────────────────────────────────────────────────
+function readThumb(file) {
+  const r = new FileReader();
+  r.onload = e => showThumbPreview(e.target.result, false);
+  r.readAsDataURL(file);
+}
+
+function showThumbPreview(src, isExisting) {
+  document.getElementById('thumb-dropzone').style.display = 'none';
+  document.getElementById('thumb-preview').innerHTML = `
+    <div class="position-relative d-inline-block">
+      <img src="${src}" style="height:72px;width:72px;object-fit:cover;border-radius:6px;border:1px solid #eee" />
+      <button type="button" onclick="clearThumb(${!!isExisting})"
+        style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#dc3545;border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">&#xD7;</button>
+    </div>`;
+}
+
+function clearThumb(wasExisting) {
+  if (wasExisting) pendingDeleteThumbnail = true;
+  else pendingThumbnailFile = null;
+  document.getElementById('thumb-preview').innerHTML = '';
+  document.getElementById('thumb-dropzone').style.display = '';
+}
+
+// ── Gallery helpers ───────────────────────────────────────────────────────────
+function addNewGalleryFile(file) {
+  newGalleryFiles.push(file);
+  addGalleryPreview(null, null, file);
+}
+
+function addGalleryPreview(url, existingId, file) {
+  const wrap = document.getElementById('images-preview');
+  const div  = document.createElement('div');
+  div.className = 'position-relative d-inline-flex';
+  div.style.cssText = 'width:72px;height:72px;flex-shrink:0';
+  const img = document.createElement('img');
+  img.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #eee;display:block';
+  img.loading = 'lazy';
+  if (file) {
+    const r = new FileReader();
+    r.onload = e => { img.src = e.target.result; };
+    r.readAsDataURL(file);
+  } else if (url) { img.src = url; }
+  const btn  = document.createElement('button');
+  btn.type   = 'button';
+  btn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#dc3545;border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:1';
+  btn.innerHTML = '&times;';
+  btn.addEventListener('click', () => {
+    if (existingId) pendingImagesToDelete.push(existingId);
+    else if (file)  { const i = newGalleryFiles.indexOf(file); if (i > -1) newGalleryFiles.splice(i, 1); }
+    div.remove();
+  });
+  div.appendChild(img);
+  div.appendChild(btn);
+  wrap.appendChild(div);
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function debounce(fn, delay = 300) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); };
+}
+</script>
+</body>
+</html>

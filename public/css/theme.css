@@ -1,0 +1,1011 @@
+/* ===================================================
+   Toko Albi Parfum — Luxury Parfumerie Theme
+   Aesthetic: Modern Quiet Luxury (Editorial / Artisanal)
+   =================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap');
+
+:root {
+  /* Brand Core */
+  --canvas:        #FAF9F6;
+  --surface:       #FFFFFF;
+  --surface-alt:   #F4F3EE;
+  --surface-hover: #EFECE4;
+  --border-subtle: #EBE8E1;
+  --border-strong: #D5D1C6;
+
+  /* Typography Colors */
+  --ink:           #141414;
+  --ink-secondary: #52504A;
+  --ink-muted:     #828078;
+  --ink-inverted:  #FFFFFF;
+
+  /* Signature Antique Gold & Accents */
+  --gold:          #9E7A36;
+  --gold-hover:    #826328;
+  --gold-light:    #C8A968;
+  --gold-subtle:   rgba(158, 122, 54, 0.08);
+  --gold-border:   rgba(158, 122, 54, 0.25);
+
+  /* Functional Status */
+  --status-success: #2E7D32;
+  --status-danger:  #C62828;
+  --status-warn:    #E65100;
+  --status-info:    #1565C0;
+
+  /* Typography */
+  --font-serif:    'Playfair Display', Georgia, serif;
+  --font-editorial:'Cormorant Garamond', Georgia, serif;
+  --font-sans:     'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Elevation */
+  --shadow-sm:  0 2px 6px rgba(20, 20, 20, 0.04);
+  --shadow-md:  0 8px 24px -4px rgba(20, 20, 20, 0.07);
+  --shadow-lg:  0 20px 48px -8px rgba(20, 20, 20, 0.12);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius:    8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* === Base Resets === */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--gold);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Tabular numbers for clean prices and data alignment */
+.tabular-nums, .price, .product-card-price, .cart-item-price, .order-summary-item-price {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* === Custom Scrollbar === */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--canvas); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ===================================================
+   NAVBAR (Refined Floating Silk Glass)
+   =================================================== */
+.navbar-albi {
+  background: rgba(250, 249, 246, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.9rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.navbar-albi .brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.navbar-albi .brand-name span {
+  color: var(--gold);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.nav-link-albi {
+  color: var(--ink-secondary);
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem !important;
+  position: relative;
+  transition: color var(--transition);
+}
+
+.nav-link-albi:hover,
+.nav-link-albi.active {
+  color: var(--ink) !important;
+}
+
+.nav-link-albi::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 1.5px;
+  background: var(--gold);
+  transition: all var(--transition);
+  transform: translateX(-50%);
+}
+
+.nav-link-albi:hover::after,
+.nav-link-albi.active::after {
+  width: 24px;
+}
+
+.cart-badge {
+  background: var(--ink);
+  color: var(--ink-inverted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  min-width: 18px;
+  text-align: center;
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  border: 1.5px solid var(--surface);
+  line-height: 1.2;
+}
+
+/* ===================================================
+   HERO BANNER (Artisan High-Fashion Editorial)
+   =================================================== */
+.hero {
+  background: #111215;
+  color: var(--ink-inverted);
+  padding: 100px 0 95px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hero-editorial-border {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.hero-editorial-border::before {
+  content: '';
+  position: absolute;
+  top: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 60px; height: 1px;
+  background: var(--gold-light);
+}
+
+.hero-eyebrow {
+  letter-spacing: 0.28em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 5.2vw, 3.8rem);
+  color: #FAF8F5;
+  line-height: 1.15;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-title span {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 500;
+  color: #E2C97E;
+}
+
+.hero-subtitle {
+  color: rgba(250, 248, 245, 0.72);
+  font-size: 1.05rem;
+  max-width: 520px;
+  margin: 0 auto 2.2rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* Trust Bar / Micro Feature Strip */
+.trust-strip {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface);
+  padding: 1.2rem 0;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.83rem;
+  color: var(--ink-secondary);
+}
+
+.trust-item i {
+  font-size: 1.25rem;
+  color: var(--gold);
+}
+
+.trust-item strong {
+  color: var(--ink);
+  font-weight: 600;
+  display: block;
+  font-size: 0.86rem;
+}
+
+/* ===================================================
+   BUTTONS (High Contrast Quiet Luxury)
+   =================================================== */
+.btn-gold, .btn-primary-albi {
+  background: var(--ink);
+  color: var(--ink-inverted) !important;
+  border: 1px solid var(--ink);
+  font-weight: 500;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 1.6rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-gold:hover, .btn-primary-albi:hover {
+  background: #2A2A2D;
+  border-color: #2A2A2D;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-gold:active, .btn-primary-albi:active {
+  transform: translateY(0);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  font-weight: 500;
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+  padding: 0.65rem 1.6rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-outline-gold:hover {
+  background: var(--surface-alt);
+  border-color: var(--ink);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.btn-black {
+  background: var(--ink);
+  color: var(--ink-inverted);
+  border: none;
+  font-weight: 500;
+  padding: 0.65rem 1.6rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.btn-black:hover {
+  background: #2A2A2D;
+  color: var(--ink-inverted);
+}
+
+/* ===================================================
+   SECTION HEADINGS
+   =================================================== */
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  color: var(--ink);
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
+.section-subtitle {
+  color: var(--ink-secondary);
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+  font-weight: 400;
+}
+
+/* ===================================================
+   CATEGORY FILTER PILLS (Refined Minimalist Tabs)
+   =================================================== */
+.category-filter-wrap {
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface);
+}
+
+.filter-pill {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  padding: 0.42rem 1.15rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  border-color: var(--border-strong);
+  color: var(--ink);
+  background: var(--surface-alt);
+}
+
+.filter-pill.active {
+  border-color: var(--ink);
+  color: var(--ink-inverted);
+  background: var(--ink);
+  box-shadow: 0 2px 8px rgba(20, 20, 20, 0.12);
+}
+
+/* ===================================================
+   PRODUCT CARDS (Quiet Luxury Gallery Format)
+   =================================================== */
+.product-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.product-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.product-card-img-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--surface-alt);
+  overflow: hidden;
+  position: relative;
+}
+
+.product-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.product-card:hover .product-card-img {
+  transform: scale(1.04);
+}
+
+.product-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-muted);
+  font-size: 2.2rem;
+}
+
+.product-card-body {
+  padding: 1.1rem 1.15rem 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card-category {
+  font-size: 0.7rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.product-card-name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+  line-height: 1.35;
+  transition: color var(--transition);
+}
+
+.product-card:hover .product-card-name {
+  color: var(--gold);
+}
+
+.product-card-price {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+.badge-new {
+  background: var(--ink);
+  color: var(--ink-inverted);
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-out {
+  background: #73716B;
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ===================================================
+   PRODUCT DETAIL PAGE
+   =================================================== */
+.product-gallery-main {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+  border: 1px solid var(--border-subtle);
+  transition: transform var(--transition);
+}
+
+.product-thumbs {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+
+.product-thumb {
+  width: 68px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-subtle);
+  cursor: pointer;
+  background: var(--surface-alt);
+  transition: border-color var(--transition);
+}
+
+.product-thumb:hover,
+.product-thumb.active {
+  border-color: var(--ink);
+}
+
+.product-name-detail {
+  font-family: var(--font-serif);
+  font-size: 2.1rem;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.product-price-detail {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Olfactory Pyramid / Scent Notes */
+.fragrance-pyramid {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  margin: 1.5rem 0;
+}
+
+.fragrance-pyramid-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.fragrance-note-row {
+  display: flex;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.fragrance-note-label {
+  width: 100px;
+  color: var(--ink-secondary);
+  font-weight: 500;
+}
+
+.fragrance-note-val {
+  color: var(--ink);
+  flex: 1;
+}
+
+/* Variant Buttons */
+.variant-btn {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.55rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.variant-btn:hover {
+  border-color: var(--ink);
+  background: var(--surface-alt);
+}
+
+.variant-btn.selected {
+  border-color: var(--ink);
+  color: var(--ink-inverted);
+  background: var(--ink);
+}
+
+.variant-btn.out-of-stock {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Quantity Selector */
+.qty-input-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.qty-btn {
+  background: var(--surface-alt);
+  border: none;
+  width: 36px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background var(--transition);
+}
+
+.qty-btn:hover {
+  background: var(--border-strong);
+}
+
+.qty-display {
+  width: 48px;
+  height: 38px;
+  border: none;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* ===================================================
+   CART & CHECKOUT
+   =================================================== */
+.cart-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cart-item-img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.cart-item-info { flex: 1; }
+.cart-item-name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+.cart-item-variant { font-size: 0.82rem; color: var(--ink-secondary); }
+.cart-item-price { font-weight: 600; color: var(--ink); font-size: 0.98rem; }
+
+.cart-item-remove {
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color var(--transition);
+  padding: 4px;
+}
+
+.cart-item-remove:hover {
+  color: var(--status-danger);
+}
+
+.cart-summary-box {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  font-size: 0.92rem;
+  color: var(--ink-secondary);
+}
+
+.cart-summary-total {
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--ink);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Checkout Card Section */
+.checkout-section {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.checkout-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.12rem;
+  color: var(--ink);
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+.form-control, .form-select {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.08);
+  outline: none;
+}
+
+/* Shipping Options */
+.shipping-option {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  background: var(--surface);
+  transition: all var(--transition);
+  margin-bottom: 0.5rem;
+}
+
+.shipping-option:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-alt);
+}
+
+.shipping-option.selected {
+  border-color: var(--ink);
+  background: var(--surface-alt);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.shipping-option input[type="radio"] { accent-color: var(--ink); }
+.shipping-option-name { font-weight: 600; font-size: 0.88rem; color: var(--ink); }
+.shipping-option-detail { font-size: 0.8rem; color: var(--ink-secondary); }
+.shipping-option-price { font-weight: 600; color: var(--ink); margin-left: auto; font-size: 0.9rem; }
+
+/* Payment Options */
+.payment-option {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  background: var(--surface);
+  transition: all var(--transition);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.payment-option:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-alt);
+}
+
+.payment-option.selected {
+  border-color: var(--ink);
+  background: var(--surface-alt);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.payment-option input[type="radio"] { accent-color: var(--ink); }
+
+/* ===================================================
+   SEARCH BAR
+   =================================================== */
+.search-bar {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-bar:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.08);
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.88rem;
+  outline: none;
+  color: var(--ink);
+  background: transparent;
+}
+
+.search-bar button {
+  background: transparent;
+  border: none;
+  padding: 0 1rem;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: color var(--transition);
+}
+
+.search-bar button:hover {
+  color: var(--ink);
+}
+
+/* ===================================================
+   FOOTER (High Luxury Minimalist)
+   =================================================== */
+.footer {
+  background: #111215;
+  color: rgba(250, 248, 245, 0.65);
+  padding: 4rem 0 2rem;
+  margin-top: 5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-brand {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: #FFFFFF;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.03em;
+}
+
+.footer-brand span {
+  color: var(--gold-light);
+  font-family: var(--font-editorial);
+  font-style: italic;
+}
+
+.footer-tagline {
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: rgba(250, 248, 245, 0.5);
+}
+
+.footer h6 {
+  color: #FFFFFF;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  font-family: var(--font-sans);
+}
+
+.footer a {
+  color: rgba(250, 248, 245, 0.6);
+  font-size: 0.86rem;
+  display: block;
+  margin-bottom: 0.55rem;
+  transition: color var(--transition);
+}
+
+.footer a:hover {
+  color: var(--gold-light);
+}
+
+.footer-divider {
+  border-color: rgba(255, 255, 255, 0.08);
+  margin: 2.5rem 0 1.5rem;
+}
+
+.footer-copy {
+  font-size: 0.78rem;
+  color: rgba(250, 248, 245, 0.35);
+  text-align: center;
+}
+
+/* ===================================================
+   TOAST NOTIFICATION
+   =================================================== */
+.toast-container-albi {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast-albi {
+  background: var(--ink);
+  color: var(--ink-inverted);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.25rem;
+  font-size: 0.86rem;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toast-albi.success .toast-icon { color: #81C784; }
+.toast-albi.error   .toast-icon { color: #E57373; }
+.toast-albi.info    .toast-icon { color: var(--gold-light); }
+
+/* ===================================================
+   SKELETON LOADER
+   =================================================== */
+.skeleton {
+  background: #EAE8E1;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-card {
+  height: 310px;
+  border-radius: var(--radius);
+}
+
+/* ===================================================
+   RESPONSIVE DESIGN
+   =================================================== */
+@media (max-width: 768px) {
+  .hero { padding: 65px 0 55px; }
+  .hero-editorial-border { padding: 2rem 1.2rem; }
+  .hero-title { font-size: 2.1rem; }
+  .section-title { font-size: 1.55rem; }
+  .cart-summary-box { margin-top: 1.5rem; }
+}

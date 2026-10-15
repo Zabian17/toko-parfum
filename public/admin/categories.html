@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kategori — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="admin-search" style="width:280px">
+          <input type="text" id="search-input" placeholder="Cari kategori…" />
+          <button id="search-btn"><i class="bi bi-search"></i></button>
+        </div>
+        <button class="btn-admin-gold" id="btn-add"><i class="bi bi-plus-lg"></i> Tambah Kategori</button>
+      </div>
+
+      <div class="admin-card">
+        <div id="cat-table"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal fade" id="catModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title">Tambah Kategori</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-alert"></div>
+        <div class="mb-3">
+          <label class="admin-form-label">Nama Kategori <span class="text-danger">*</span></label>
+          <input type="text" id="form-name" class="admin-form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="admin-form-label">Slug <span class="text-danger">*</span></label>
+          <input type="text" id="form-slug" class="admin-form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="admin-form-label">Deskripsi</label>
+          <textarea id="form-desc" class="admin-form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="admin-form-label">Gambar Kategori</label>
+          <input type="file" id="form-image" class="admin-form-control" accept="image/*" />
+          <div id="img-preview" class="mt-2"></div>
+        </div>
+        <div class="mb-3">
+          <label class="admin-form-label">Urutan Tampil</label>
+          <input type="number" id="form-sort" class="admin-form-control" min="0" value="0" />
+        </div>
+        <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:0.87rem">
+          <input type="checkbox" id="form-active" class="form-check-input m-0" checked /> Aktif
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-admin-gold" id="btn-save">
+          <span id="save-text">Simpan</span>
+          <span class="spinner-border spinner-border-sm d-none" id="save-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Hapus Kategori</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" style="font-size:0.88rem">
+        Yakin hapus kategori <strong id="delete-name"></strong>? Tindakan ini tidak dapat dibatalkan.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-admin-danger" id="btn-confirm-delete">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+const catModal    = new bootstrap.Modal(document.getElementById('catModal'));
+const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+let editingId = null, deletingId = null;
+let table;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!AdminAuth.requireAuth()) return;
+  AdminAuth.buildLayout('Kelola Kategori', 'categories');
+  initTable();
+  bindEvents();
+});
+
+function initTable() {
+  table = new Tabulator('#cat-table', {
+    ajaxURL: '/api/admin/categories',
+    ajaxRequestFunc: function(url, config, params) {
+      const p = { page: params.page || 1, per_page: params.size || 10 };
+      const remoteFilters = params.filter || params.filters || [];
+      const remoteSorters = params.sort || params.sorters || [];
+      const search = document.getElementById('search-input').value.trim();
+      if (search) p.search = search;
+      if (remoteFilters.length) p.filters = JSON.stringify(remoteFilters);
+      if (remoteSorters.length) p.sorters = JSON.stringify(remoteSorters);
+      return axios.get(url, {
+        headers: { 'Authorization': 'Bearer ' + AdminAuth.token(), 'Accept': 'application/json' },
+        params: p,
+      }).then(function(res) {
+        const r = res.data;
+        return { data: r.data ?? r, last_page: r.meta?.last_page ?? r.last_page ?? 1 };
+      });
+    },
+    pagination: true,
+    paginationMode: 'remote',
+    filterMode: 'remote',
+    sortMode: 'remote',
+    paginationSize: 10,
+    paginationSizeSelector: [10, 20, 50],
+    layout: 'fitColumns',
+    resizableColumns: true,
+    placeholder: '<div class="admin-empty"><i class="bi bi-tags"></i><br>Belum ada kategori</div>',
+    columns: [
+      {
+        title: 'Kategori',
+        field: 'name',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          const c = cell.getRow().getData();
+          const img = c.image
+            ? `<img src="/storage/${escA(c.image)}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:8px" />`
+            : `<span style="display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;background:#f0ece4;border-radius:4px;margin-right:8px"><i class="bi bi-tag"></i></span>`;
+          return img + `<strong style="font-size:0.85rem">${escA(c.name)}</strong>`;
+        },
+        minWidth: 180,
+      },
+      {
+        title: 'Slug',
+        field: 'slug',
+        headerFilter: 'input',
+        formatter: function(cell) {
+          return `<span style="font-size:0.82rem;color:#888">${escA(cell.getValue() || '')}</span>`;
+        },
+      },
+      {
+        title: 'Produk',
+        field: 'products_count',
+        hozAlign: 'center',
+        width: 120,
+        formatter: function(cell) {
+          return `<span style="font-size:0.85rem">${cell.getValue() ?? '—'}</span>`;
+        },
+      },
+      {
+        title: 'Status',
+        field: 'is_active',
+        hozAlign: 'center',
+        width: 120,
+        headerFilter: 'list',
+        headerFilterParams: { values: { '': 'Semua', true: 'Aktif', false: 'Nonaktif' } },
+        formatter: function(cell) {
+          return cell.getValue() ? activeBadge(true) : activeBadge(false);
+        },
+      },
+      {
+        title: 'Urutan',
+        field: 'sort_order',
+        hozAlign: 'center',
+        width: 120,
+        formatter: function(cell) {
+          return `<span style="font-size:0.85rem">${cell.getValue() ?? 0}</span>`;
+        },
+      },
+      {
+        title: '',
+        field: 'id',
+        headerSort: false,
+        width: 90,
+        formatter: function(cell) {
+          const c = cell.getRow().getData();
+          return `
+            <div class="d-flex gap-1">
+              <button class="btn-action btn-edit" data-id="${c.id}" title="Edit"><i class="bi bi-pencil"></i></button>
+              <button class="btn-action btn-delete" data-id="${c.id}" data-name="${escA(c.name)}" title="Hapus"><i class="bi bi-trash3"></i></button>
+            </div>
+          `;
+        },
+        cellClick: function(e, cell) {
+          const btn = e.target.closest('.btn-edit, .btn-delete');
+          if (!btn) return;
+          if (btn.classList.contains('btn-edit'))   openEdit(btn.dataset.id);
+          if (btn.classList.contains('btn-delete')) {
+            deletingId = btn.dataset.id;
+            document.getElementById('delete-name').textContent = btn.dataset.name;
+            deleteModal.show();
+          }
+        },
+      },
+    ],
+  });
+}
+
+function bindEvents() {
+  const doSearch = debounce(() => { table.setData(); }, 400);
+  document.getElementById('search-input').addEventListener('input', doSearch);
+  document.getElementById('search-btn').addEventListener('click', () => table.setData());
+
+  document.getElementById('btn-add').addEventListener('click', () => openModal());
+
+  document.getElementById('form-name').addEventListener('input', e => {
+    if (!editingId) document.getElementById('form-slug').value = slugify(e.target.value);
+  });
+
+  document.getElementById('form-image').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('img-preview').innerHTML =
+        `<img src="${ev.target.result}" style="height:60px;border-radius:4px" />`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('btn-save').addEventListener('click', saveCategory);
+  document.getElementById('btn-confirm-delete').addEventListener('click', confirmDelete);
+}
+
+function openModal(data = null) {
+  editingId = data?.id || null;
+  document.getElementById('modal-title').textContent = data ? 'Edit Kategori' : 'Tambah Kategori';
+  document.getElementById('form-name').value  = data?.name || '';
+  document.getElementById('form-slug').value  = data?.slug || '';
+  document.getElementById('form-desc').value  = data?.description || '';
+  document.getElementById('form-sort').value  = data?.sort_order || 0;
+  document.getElementById('form-active').checked = data ? !!data.is_active : true;
+  document.getElementById('img-preview').innerHTML = data?.image
+    ? `<img src="/storage/${escA(data.image)}" style="height:60px;border-radius:4px" />`
+    : '';
+  document.getElementById('modal-alert').innerHTML = '';
+  catModal.show();
+}
+
+async function openEdit(id) {
+  try {
+    const res = await adminApi.get(`/categories/${id}`);
+    const c = res.data.data || res.data;
+    c.id = id;
+    openModal(c);
+  } catch(e) { showAlert('Gagal memuat data kategori.', 'error'); }
+}
+
+async function confirmDelete() {
+  try {
+    await adminApi.delete(`/categories/${deletingId}`);
+    deleteModal.hide();
+    showAlert('Kategori berhasil dihapus.');
+    table.setData();
+  } catch(e) { showAlert(e.response?.data?.message || 'Gagal menghapus.', 'error'); }
+}
+
+async function saveCategory() {
+  const name = document.getElementById('form-name').value.trim();
+  const slug = document.getElementById('form-slug').value.trim();
+  if (!name || !slug) { document.getElementById('modal-alert').innerHTML = '<div class="alert alert-danger py-2" style="font-size:0.83rem">Nama dan slug wajib diisi.</div>'; return; }
+
+  setSaving(true);
+
+  const formData = new FormData();
+  formData.append('name',       name);
+  formData.append('slug',       slug);
+  formData.append('description', document.getElementById('form-desc').value.trim());
+  formData.append('sort_order',  document.getElementById('form-sort').value || 0);
+  formData.append('is_active',   document.getElementById('form-active').checked ? 1 : 0);
+  const imgFile = document.getElementById('form-image').files[0];
+  if (imgFile) formData.append('image', imgFile);
+
+  try {
+    const token = AdminAuth.token();
+    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+    if (editingId) {
+      formData.append('_method', 'PUT');
+      await axios.post(`/api/admin/categories/${editingId}`, formData, { headers });
+    } else {
+      await axios.post('/api/admin/categories', formData, { headers });
+    }
+    catModal.hide();
+    showAlert(editingId ? 'Kategori diperbarui.' : 'Kategori ditambahkan.');
+    table.setData();
+  } catch(e) {
+    const errors = e.response?.data?.errors;
+    const msg = errors ? Object.values(errors).flat().join('; ') : (e.response?.data?.message || 'Gagal menyimpan.');
+    document.getElementById('modal-alert').innerHTML = `<div class="alert alert-danger py-2" style="font-size:0.83rem">${escA(msg)}</div>`;
+  } finally { setSaving(false); }
+}
+
+function setSaving(on) {
+  document.getElementById('save-text').classList.toggle('d-none', on);
+  document.getElementById('save-spinner').classList.toggle('d-none', !on);
+  document.getElementById('btn-save').disabled = on;
+}
+
+function debounce(fn, delay = 300) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+</script>
+</body>
+</html>

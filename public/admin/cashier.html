@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kasir — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+  <style>
+    /* ---- Extra POS styles ---- */
+    .product-grid-empty { padding: 2rem; text-align:center; color:#aaa; font-size:.9rem; }
+    .cashier-receipt-line { display:flex; justify-content:space-between; font-size:.83rem; padding:.2rem 0; }
+    .cashier-receipt-line strong { color:var(--admin-text); }
+
+    /* Override admin.css grid layout on the product-grid container */
+    #product-grid {
+      display: flex !important;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* ---- Product list rows ---- */
+    .cprod-list { display:flex; flex-direction:column; }
+    .cprod-row {
+      display:flex; align-items:center; gap:.65rem;
+      padding:.5rem .85rem; border-bottom:1px solid var(--admin-border);
+      transition:background .15s;
+    }
+    .cprod-row:last-child { border-bottom:none; }
+    .cprod-row:hover { background:rgba(201,168,76,.05); }
+    .cprod-thumb {
+      width:46px; height:46px; object-fit:cover; border-radius:7px;
+      border:1px solid var(--admin-border); flex-shrink:0; background:#f7f7f7;
+    }
+    .cprod-placeholder {
+      width:46px; height:46px; border-radius:7px; flex-shrink:0;
+      background:#f7f7f7; border:1px solid var(--admin-border);
+      display:flex; align-items:center; justify-content:center; color:#ccc; font-size:1.2rem;
+    }
+    .cprod-info { flex:1; min-width:0; }
+    .cprod-name {
+      font-size:.83rem; font-weight:600; line-height:1.3;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--admin-text);
+    }
+    .cprod-meta { display:flex; align-items:center; gap:.5rem; margin-top:2px; }
+    .cprod-price { font-size:.79rem; font-weight:700; color:#9A7B2F; }
+    .cprod-stock {
+      font-size:.68rem; padding:1px 5px; border-radius:3px;
+      background:#f3f3f3; color:#888; border:1px solid #e8e8e8;
+    }
+    .cprod-vsel {
+      margin-top:4px; font-size:.75rem; padding:.22rem .4rem;
+      border:1px solid var(--admin-border); border-radius:5px;
+      background:#fff; color:var(--admin-text); width:100%; max-width:190px;
+    }
+    .cprod-vsel:focus { outline:none; border-color:var(--admin-gold); }
+    /* Variant buttons (small, pill-like) */
+    .cprod-vgroup { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+    .cprod-variant-btn {
+      padding:4px 8px; font-size:.72rem; border-radius:4px; border:1px solid var(--admin-border);
+      background:#fff; color:var(--admin-text); cursor:pointer; min-width:0; transition:all 0.15s;
+    }
+    .cprod-variant-btn.active {
+      background:var(--admin-black) !important; color:#fff; border-color:var(--admin-black);
+    }
+    .cprod-add {
+      width:32px; height:32px; border-radius:4px;
+      background:var(--admin-black); border:none; color:#fff;
+      font-size:1rem; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; flex-shrink:0; transition:all 0.15s;
+    }
+    .cprod-add:hover { background:#2A2A2D; transform:scale(1.02); }
+    .cprod-add:active { transform:scale(.95); }
+
+    /* ---- Cart item ---- */
+    .cashier-cart-item { padding:.55rem 0; border-bottom:1px solid var(--admin-border); display:flex; align-items:center; gap:.75rem; }
+    .cashier-cart-item:last-child { border-bottom:none; }
+    .cashier-totals td { font-size:.88rem; padding:.25rem 0; }
+    .cashier-totals .grand-total { font-size:1.15rem; font-weight:700; color:var(--admin-text); }
+
+    /* ---- Qty btn ---- */
+    .cashier-qty-btn {
+      width:24px; height:24px; border-radius:4px; border:1px solid var(--admin-border-strong);
+      background:var(--admin-bg); color:var(--admin-text); font-size:0.95rem; line-height:1;
+      cursor:pointer; transition:.15s; display:flex; align-items:center; justify-content:center;
+    }
+    .cashier-qty-btn:hover { background:var(--admin-black); border-color:var(--admin-black); color:#fff; }
+  </style>
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content" style="padding:1rem">
+
+      <div id="alert-container" class="mb-2"></div>
+
+      <div class="cashier-wrap">
+
+        <!-- LEFT: Produk -->
+        <div class="cashier-products">
+          <div class="cashier-search mb-3">
+            <div class="admin-search">
+              <input type="text" id="product-search" placeholder="Cari nama aroma…" autocomplete="off" />
+              <button id="product-search-btn"><i class="bi bi-search"></i></button>
+            </div>
+          </div>
+          <div id="product-grid" class="cashier-product-grid">
+            <div class="product-grid-empty"><span class="spinner-border spinner-border-sm"></span><br>Memuat produk…</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Keranjang Kasir -->
+        <div class="cashier-cart">
+          <div class="cashier-cart-title">Pesanan</div>
+
+          <div class="row g-1 mb-2">
+            <div class="col-7">
+              <input type="text" id="customer-name" class="admin-form-control" placeholder="Nama pelanggan" />
+            </div>
+            <div class="col-5">
+              <input type="text" id="customer-phone" class="admin-form-control" placeholder="No. HP (opsional)" />
+            </div>
+          </div>
+
+          <div id="cart-list" style="flex:1;overflow-y:auto;min-height:80px">
+            <div class="product-grid-empty"><i class="bi bi-cart3"></i><br>Keranjang kosong</div>
+          </div>
+
+          <div class="cashier-cart-footer">
+            <table class="cashier-totals w-100 mb-2">
+              <tr><td>Subtotal</td><td class="text-end" id="total-subtotal">Rp 0</td></tr>
+              <tr class="cashier-totals grand-total"><td>Total</td><td class="text-end" id="total-grand">Rp 0</td></tr>
+            </table>
+
+            <div class="admin-form-group mb-2">
+              <label class="admin-form-label">Metode Bayar</label>
+              <select id="payment-method" class="admin-form-control">
+                <option value="cash">Tunai</option>
+                <option value="transfer">Transfer Bank</option>
+                <option value="qris">QRIS</option>
+              </select>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn-admin-outline flex-grow-1" id="btn-clear-cart" type="button">
+                <i class="bi bi-trash"></i> Bersihkan
+              </button>
+              <button class="btn-admin-gold flex-grow-1" id="btn-checkout" type="button">
+                <span id="checkout-text"><i class="bi bi-check-circle"></i> Buat Pesanan</span>
+                <span class="spinner-border spinner-border-sm d-none" id="checkout-spinner"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- .cashier-wrap -->
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom:2px solid var(--admin-gold)">
+        <h5 class="modal-title"><i class="bi bi-receipt"></i> Struk Pesanan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="receipt-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" id="btn-print-receipt"><i class="bi bi-printer"></i> Cetak</button>
+        <button type="button" class="btn-admin-gold" data-bs-dismiss="modal" id="btn-new-transaction">Transaksi Baru</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+const receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
+let cart = []; // [{product_id, variant_id, name, variantName, price, qty, stock}]
+let lastReceipt = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!AdminAuth.requireAuth()) return;
+  AdminAuth.buildLayout('Kasir / POS', 'cashier');
+  loadPaymentMethods();
+  loadProducts();
+  bindEvents();
+});
+
+/* -------- Load Payment Methods from settings -------- */
+async function loadPaymentMethods() {
+  try {
+    const res = await axios.get('/api/payment/config');
+    const cfg = res.data.data || res.data;
+    const sel = document.getElementById('payment-method');
+    // Rebuild options based on enabled flags:
+    // cash & transfer are local-only, qris maps to midtrans_enabled
+    const allowed = [
+      { value: 'cash',     label: 'Tunai',        always: true },
+      { value: 'transfer', label: 'Transfer Bank', flag: cfg.bank_transfer_enabled !== false },
+      { value: 'qris',     label: 'QRIS / Midtrans', flag: cfg.midtrans_enabled !== false },
+    ];
+    sel.innerHTML = allowed
+      .filter(o => o.always || o.flag)
+      .map(o => `<option value="${o.value}">${o.label}</option>`)
+      .join('');
+  } catch(e) { /* keep defaults */ }
+}
+
+/* -------- Load Products -------- */
+async function loadProducts(search = '') {
+  document.getElementById('product-grid').innerHTML = '<div class="product-grid-empty"><span class="spinner-border spinner-border-sm"></span></div>';
+  try {
+    const res = await adminApi.get('/products', { params: { search: search || undefined, per_page: 30, is_active: 1, in_stock: 1 } });
+    const products = (res.data.data || res.data).filter(p => p.is_active !== false && (p.total_stock ?? p.stock ?? 0) > 0);
+    renderProductGrid(products);
+  } catch(e) {
+    document.getElementById('product-grid').innerHTML = '<div class="product-grid-empty">Gagal memuat produk</div>';
+  }
+}
+
+function renderProductGrid(products) {
+  if (!products.length) {
+    document.getElementById('product-grid').innerHTML = '<div class="product-grid-empty">Produk tidak ditemukan</div>';
+    return;
+  }
+  const rows = products.map(p => {
+    // Only show variants that have stock > 0
+    const variants = (p.variants || []).filter(v => (v.stock ?? 0) > 0);
+    const hasVariants = variants.length > 0;
+    const thumb = p.thumbnail || p.image || '';
+    const thumbHtml = thumb
+      ? `<img src="${resolveAssetUrl(thumb)}" class="cprod-thumb" alt="" loading="lazy" />`
+      : `<div class="cprod-placeholder"><i class="bi bi-droplet-fill"></i></div>`;
+    const stock = p.total_stock ?? p.stock ?? 0;
+
+    const variantHtml = hasVariants
+      ? `<div class="cprod-vgroup" data-pid="${p.id}">
+           ${variants.map(v =>
+             `<button type="button" class="cprod-variant-btn" data-vid="${v.id}" data-price="${v.price}" data-stock="${v.stock}" data-name="${escA(v.name)}">${escA(v.name)}</button>`
+           ).join('')}
+         </div>`
+      : '';
+
+    return `
+      <div class="cprod-row">
+        ${thumbHtml}
+        <div class="cprod-info">
+          <div class="cprod-name" title="${escA(p.name)}">${escA(p.name)}</div>
+          <div class="cprod-meta">
+            <span class="cprod-price">${p.min_price != null ? 'Mulai ' + fmtRp(p.min_price) : ''}</span>
+            <span class="cprod-stock">Stok: ${stock}</span>
+          </div>
+          ${variantHtml}
+        </div>
+        <button class="cprod-add btn-add-to-cart"
+          data-id="${p.id}"
+          data-name="${escA(p.name)}"
+          data-price="${p.min_price || 0}"
+          data-stock="${p.total_stock ?? p.stock ?? 99}"
+          data-has-variants="${hasVariants ? '1' : '0'}"
+          title="Tambah ke pesanan">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+      </div>`;
+  }).join('');
+
+  document.getElementById('product-grid').innerHTML = `<div class="cprod-list">${rows}</div>`;
+}
+
+/* -------- Cart -------- */
+function addToCart(productId, name, price, stock, variantId = null, variantName = '') {
+  if (variantId && !variantName) { showAlert('Pilih ukuran terlebih dahulu', 'warning'); return; }
+  const key = `${productId}-${variantId || ''}`;
+  const existing = cart.find(c => c.key === key);
+  if (existing) {
+    if (existing.qty >= stock) { showAlert('Stok tidak mencukupi', 'warning'); return; }
+    existing.qty++;
+  } else {
+    cart.push({ key, product_id: productId, variant_id: variantId, name, variantName, price: Number(price), qty: 1, stock });
+  }
+  renderCart();
+}
+
+function renderCart() {
+  const listEl = document.getElementById('cart-list');
+  if (!cart.length) {
+    listEl.innerHTML = '<div class="product-grid-empty"><i class="bi bi-cart3"></i><br>Keranjang kosong</div>';
+    document.getElementById('total-subtotal').textContent = 'Rp 0';
+    document.getElementById('total-grand').textContent = 'Rp 0';
+    return;
+  }
+
+  listEl.innerHTML = cart.map((item, idx) => `
+    <div class="cashier-cart-item">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.84rem;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${escA(item.name)}</div>
+        ${item.variantName ? `<div style="font-size:.75rem;color:#888">${escA(item.variantName)}</div>` : ''}
+        <div style="font-size:.82rem;color:var(--admin-gold);font-weight:500">${fmtRp(item.price)}</div>
+      </div>
+      <div class="d-flex align-items-center gap-1">
+        <button class="cashier-qty-btn" data-action="decrease" data-idx="${idx}">−</button>
+        <span style="min-width:24px;text-align:center;font-size:.88rem;font-weight:600">${item.qty}</span>
+        <button class="cashier-qty-btn" data-action="increase" data-idx="${idx}">+</button>
+        <button class="cashier-qty-btn" data-action="remove" data-idx="${idx}" style="border-color:#c0392b;color:#c0392b;margin-left:4px">
+          <i class="bi bi-x" style="font-size:.75rem"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById('total-subtotal').textContent = fmtRp(subtotal);
+  document.getElementById('total-grand').textContent = fmtRp(subtotal);
+}
+
+/* -------- Checkout -------- */
+async function doCheckout() {
+  if (!cart.length) { showAlert('Keranjang kosong', 'warning'); return; }
+
+  const payload = {
+    order_type:      'offline',
+    customer_name:   document.getElementById('customer-name').value.trim() || 'Pelanggan Umum',
+    customer_phone:  document.getElementById('customer-phone').value.trim() || '-',
+    payment_method:  document.getElementById('payment-method').value,
+    items: cart.map(i => ({
+      product_id:         i.product_id,
+      product_variant_id: i.variant_id || null,
+      quantity:           i.qty,
+    })),
+  };
+
+  document.getElementById('checkout-text').classList.add('d-none');
+  document.getElementById('checkout-spinner').classList.remove('d-none');
+  document.getElementById('btn-checkout').disabled = true;
+
+  try {
+    const res = await adminApi.post('/cashier/order', payload);
+    const order = res.data.data || res.data;
+    lastReceipt = order;
+    showReceipt(order);
+  } catch(e) {
+    showAlert(e.response?.data?.message || 'Gagal membuat pesanan', 'error');
+  } finally {
+    document.getElementById('checkout-text').classList.remove('d-none');
+    document.getElementById('checkout-spinner').classList.add('d-none');
+    document.getElementById('btn-checkout').disabled = false;
+  }
+}
+
+function showReceipt(order) {
+  const items = order.items || order.order_items || cart.map(i => ({
+    product_name: i.name, variant_name: i.variantName, price: i.price, quantity: i.qty
+  }));
+
+  document.getElementById('receipt-body').innerHTML = `
+    <div style="text-align:center;margin-bottom:1rem">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700">Toko Albi Parfum</div>
+      <div style="font-size:.78rem;color:#888">${fmtDateTime(order.created_at || new Date().toISOString())}</div>
+      <div style="font-size:.8rem;color:var(--admin-gold);font-weight:600">${escA(order.order_number || order.id || 'POS')}</div>
+    </div>
+    <hr>
+    ${items.map(i => `
+      <div class="cashier-receipt-line">
+        <span>${escA(i.product_name || i.name)}${i.variant_name ? ` <small>(${escA(i.variant_name)})</small>` : ''}</span>
+        <span>${fmtRp(i.price)} × ${i.quantity || i.qty}</span>
+      </div>
+    `).join('')}
+    <hr>
+    <div class="cashier-receipt-line"><strong>Total</strong><strong style="color:var(--admin-gold)">${fmtRp(order.grand_total || order.total || cart.reduce((s,i) => s + i.price*i.qty, 0))}</strong></div>
+    <div class="cashier-receipt-line" style="font-size:.79rem;color:#888"><span>Pembayaran</span><span style="text-transform:uppercase">${escA(order.payment_method || document.getElementById('payment-method').value)}</span></div>
+    <hr>
+    <div style="text-align:center;font-size:.75rem;color:#888;margin-top:.5rem">Terima kasih telah berbelanja!</div>
+  `;
+
+  receiptModal.show();
+}
+
+/* -------- Print receipt as thermal bon kecil -------- */
+function printReceipt() {
+  if (!lastReceipt) return;
+  const order  = lastReceipt;
+  const items  = order.items || order.order_items || cart.map(i => ({
+    product_name: i.name, variant_name: i.variantName, price: i.price, quantity: i.qty
+  }));
+  const total  = order.grand_total || order.total || cart.reduce((s,i) => s + i.price*i.qty, 0);
+  const method = order.payment_method || document.getElementById('payment-method').value;
+  const dt     = fmtDateTime(order.created_at || new Date().toISOString());
+  const no     = order.order_number || order.id || 'POS';
+
+  const lineRows = items.map(i => {
+    const name  = (i.product_name || i.name) + (i.variant_name ? ` (${i.variant_name})` : '');
+    const price = typeof fmtRp === 'function' ? fmtRp(i.price) : `Rp ${Number(i.price).toLocaleString('id-ID')}`;
+    const sub   = typeof fmtRp === 'function' ? fmtRp(i.price * (i.quantity || i.qty))
+                                              : `Rp ${(i.price * (i.quantity || i.qty)).toLocaleString('id-ID')}`;
+    return `<tr>
+      <td style="padding:2px 0;font-size:12px" colspan="3">${name}</td>
+    </tr>
+    <tr>
+      <td style="padding:0 0 4px;font-size:12px;color:#555">${i.quantity || i.qty} &times;</td>
+      <td style="padding:0 0 4px;font-size:12px;text-align:right;color:#555">${price}</td>
+      <td style="padding:0 0 4px;font-size:12px;text-align:right;font-weight:600">${sub}</td>
+    </tr>`;
+  }).join('');
+
+  const totalFmt = typeof fmtRp === 'function' ? fmtRp(total) : `Rp ${Number(total).toLocaleString('id-ID')}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Struk ${no}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Courier New', monospace; width: 76mm; margin: 0 auto; padding: 4mm; font-size: 12px; color: #000; }
+    .center { text-align:center; }
+    .bold   { font-weight:700; }
+    .big    { font-size:15px; }
+    .divider{ border:none; border-top:1px dashed #000; margin:5px 0; }
+    table   { width:100%; border-collapse:collapse; }
+    .total-row td { font-size:13px; font-weight:700; padding-top:4px; }
+    .footer { text-align:center; font-size:11px; color:#555; margin-top:8px; }
+    @media print {
+      body { width: 76mm; }
+      @page { margin: 0; size: 76mm auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="center bold big" style="letter-spacing:1px;margin-bottom:2px">TOKO ALBI PARFUM</div>
+  <div class="center" style="font-size:11px;color:#555;margin-bottom:4px">${dt}</div>
+  <div class="center" style="font-size:11px">No: <strong>${no}</strong></div>
+  <hr class="divider"/>
+  <table>
+    ${lineRows}
+  </table>
+  <hr class="divider"/>
+  <table>
+    <tr class="total-row">
+      <td>TOTAL</td>
+      <td colspan="2" style="text-align:right">${totalFmt}</td>
+    </tr>
+    <tr>
+      <td style="font-size:11px;padding-top:2px;color:#555">Bayar</td>
+      <td colspan="2" style="font-size:11px;text-align:right;text-transform:uppercase;color:#555">${method}</td>
+    </tr>
+  </table>
+  <hr class="divider"/>
+  <div class="footer">Terima kasih telah berbelanja!<br>— Toko Albi Parfum —</div>
+  <script>window.onload = function(){ window.print(); window.onafterprint = function(){ window.close(); }; }<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=500,height=500,menubar=no,toolbar=no,status=no');
+  win.document.write(html);
+  win.document.close();
+}
+
+/* -------- Events -------- */
+function bindEvents() {
+  const doSearch = debounce(v => loadProducts(v), 400);
+  document.getElementById('product-search').addEventListener('input', e => doSearch(e.target.value));
+  document.getElementById('product-search-btn').addEventListener('click', () => loadProducts(document.getElementById('product-search').value));
+
+  document.getElementById('product-grid').addEventListener('click', e => {
+    // Variant button toggle
+    const vbtn = e.target.closest('.cprod-variant-btn');
+    if (vbtn) {
+      const group = vbtn.closest('.cprod-vgroup');
+      if (!group) return;
+      // deactivate siblings
+      group.querySelectorAll('.cprod-variant-btn').forEach(b => b.classList.remove('active'));
+      vbtn.classList.add('active');
+      return;
+    }
+
+    const btn = e.target.closest('.btn-add-to-cart');
+    if (!btn) return;
+    const pid = btn.dataset.id;
+    const hasVariants = btn.dataset.hasVariants === '1';
+    if (hasVariants) {
+      const active = document.querySelector(`.cprod-vgroup[data-pid="${pid}"] .cprod-variant-btn.active`);
+      if (!active) { showAlert('Pilih ukuran terlebih dahulu', 'warning'); return; }
+      addToCart(pid, btn.dataset.name, active.dataset.price, active.dataset.stock, active.dataset.vid, active.dataset.name);
+    } else {
+      addToCart(pid, btn.dataset.name, btn.dataset.price, btn.dataset.stock);
+    }
+  });
+
+  document.getElementById('cart-list').addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    const action = btn.dataset.action;
+    if (action === 'increase') {
+      if (cart[idx].qty < cart[idx].stock) cart[idx].qty++;
+      else showAlert('Stok tidak mencukupi', 'warning');
+    } else if (action === 'decrease') {
+      cart[idx].qty--;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    } else if (action === 'remove') {
+      cart.splice(idx, 1);
+    }
+    renderCart();
+  });
+
+  document.getElementById('btn-clear-cart').addEventListener('click', () => {
+    cart = [];
+    renderCart();
+  });
+
+  document.getElementById('btn-checkout').addEventListener('click', doCheckout);
+
+  document.getElementById('btn-print-receipt').addEventListener('click', printReceipt);
+
+  // Both close (×) and "Transaksi Baru" reset the form
+  const doNewTransaction = () => {
+    cart = [];
+    document.getElementById('customer-name').value = '';
+    document.getElementById('customer-phone').value = '';
+    renderCart();
+    loadProducts();
+  };
+  document.getElementById('btn-new-transaction').addEventListener('click', doNewTransaction);
+  document.getElementById('receiptModal').addEventListener('hidden.bs.modal', doNewTransaction);
+}
+
+function debounce(fn, delay = 300) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+</script>
+</body>
+</html>

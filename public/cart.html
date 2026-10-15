@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keranjang Belanja — Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/theme.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+  <style>
+    /* SweetAlert2 gold theme overrides */
+    .swal2-confirm.swal-gold-btn { background:#C9A84C !important; border:none; }
+    .swal2-confirm.swal-gold-btn:hover { background:#a8892a !important; }
+    .swal2-popup { font-family: 'Inter', sans-serif !important; border-radius: 12px !important; }
+    .swal2-title { font-size: 1.1rem !important; font-weight: 700 !important; }
+    .swal2-html-container { font-size: 0.88rem !important; }
+    .swal-stock-list { text-align:left; margin:0; padding:0; list-style:none; }
+    .swal-stock-list li { padding: 4px 0; border-bottom: 1px solid #f0f0f0; display:flex; gap:6px; align-items:flex-start; }
+    .swal-stock-list li:last-child { border-bottom:none; }
+    .swal-stock-list li::before { content:'\2022'; color:#C9A84C; font-size:1.1rem; line-height:1.3; flex-shrink:0; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-albi">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+    <a href="./" class="nav-link-albi d-none d-md-inline">Beranda</a>
+    <a href="katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
+    <a href="lacak" class="nav-link-albi d-none d-md-inline">Lacak Pesanan</a>
+    <a href="cart" class="nav-link-albi active position-relative px-2">
+      <i class="bi bi-bag" style="font-size:1.2rem"></i>
+      <span class="cart-badge" data-cart-badge style="display:none">0</span>
+    </a>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="container">
+  <nav aria-label="breadcrumb" class="breadcrumb-albi">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="/">Beranda</a></li>
+      <li class="breadcrumb-item active">Keranjang</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="container py-4 pb-5">
+  <h1 class="section-title mb-1">Keranjang Belanja</h1>
+  <p class="section-subtitle mb-4" id="item-count-label">0 item</p>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-cart" class="empty-state d-none">
+    <div class="empty-state-icon"><i class="bi bi-bag-x"></i></div>
+    <p class="empty-state-title">Keranjang kamu kosong</p>
+    <p class="section-subtitle mb-3">Yuk, tambah parfum favoritmu dulu!</p>
+    <a href="/#katalog" class="btn-gold" style="text-decoration:none;padding:0.65rem 1.8rem">
+      Lihat Katalog
+    </a>
+  </div>
+
+  <!-- CART CONTENT -->
+  <div id="cart-content" class="d-none">
+    <div class="row g-4 align-items-start">
+
+      <!-- Items list -->
+      <div class="col-12 col-lg-8">
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:1.3rem 1.5rem">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Item</span>
+            <button id="btn-clear-cart" class="cart-item-remove" style="font-size:0.8rem">
+              <i class="bi bi-trash me-1"></i> Kosongkan
+            </button>
+          </div>
+          <div id="cart-items-container"></div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="col-12 col-lg-4">
+        <div class="cart-summary-box">
+          <h3 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:1rem">Ringkasan Pesanan</h3>
+
+          <div class="cart-summary-row">
+            <span>Subtotal (<span id="summary-item-count">0</span> item)</span>
+            <span id="summary-subtotal">Rp 0</span>
+          </div>
+          <div class="cart-summary-row">
+            <span>Ongkos Kirim</span>
+            <span style="color:var(--gray-400);font-size:0.85rem">Dihitung di checkout</span>
+          </div>
+
+          <div class="cart-summary-row cart-summary-total">
+            <span>Estimasi Total</span>
+            <span id="summary-total" class="text-gold-dark">Rp 0</span>
+          </div>
+
+          <button id="btn-checkout" class="btn-gold w-100 mt-3" style="padding:0.75rem 0;font-size:0.95rem;width:100%;border:none;cursor:pointer">
+            <span id="btn-checkout-text">Lanjut ke Checkout <i class="bi bi-arrow-right ms-1"></i></span>
+            <span id="btn-checkout-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+          </button>
+          <a href="/#katalog" class="btn-outline-gold w-100 mt-2 d-block text-center" style="text-decoration:none;padding:0.65rem 0;font-size:0.85rem">
+            Lanjut Belanja
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /#cart-content -->
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">Albi <span>Parfum</span></div>
+        <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
+      </div>
+      <div class="col-6 col-md-2">
+        <h6>Navigasi</h6>
+        <a href="./">Beranda</a>
+        <a href="katalog">Katalog</a>
+        <a href="cart">Keranjang</a>
+        <a href="lacak">Lacak Pesanan</a>
+      </div>
+      <div class="col-6 col-md-3">
+        <h6>Bantuan</h6>
+        <a href="pages/cara-pemesanan">Cara Pemesanan</a>
+        <a href="pages/pengiriman">Pengiriman</a>
+        <a href="pages/kebijakan-retur">Kebijakan Retur</a>
+      </div>
+      <div class="col-12 col-md-3">
+        <h6>Kontak</h6>
+        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
+      </div>
+    </div>
+    <hr class="footer-divider" />
+    <p class="footer-copy">&copy; 2025 Toko Albi Parfum. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script>
+/* ===================================================
+   cart.html — Page Controller
+   =================================================== */
+function pageInit() {
+  Cart._notifyBadge();
+  renderCart();
+}
+
+function renderCart() {
+  const items = Cart.all();
+  const emptyEl = document.getElementById('empty-cart');
+  const contentEl = document.getElementById('cart-content');
+
+  if (items.length === 0) {
+    emptyEl.classList.remove('d-none');
+    contentEl.classList.add('d-none');
+    document.getElementById('item-count-label').textContent = '0 item';
+    return;
+  }
+
+  emptyEl.classList.add('d-none');
+  contentEl.classList.remove('d-none');
+
+  // Item count label
+  const totalQty = Cart.count();
+  document.getElementById('item-count-label').textContent = `${totalQty} item`;
+
+  // Render items
+  const container = document.getElementById('cart-items-container');
+  container.innerHTML = '';
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'cart-item';
+    el.innerHTML = buildCartItem(item);
+    container.appendChild(el);
+  });
+
+  // NOTE: Event delegation is handled below (L270) — no need to bind here
+
+  // Summary
+  const subtotal = Cart.subtotal();
+  document.getElementById('summary-item-count').textContent = totalQty;
+  document.getElementById('summary-subtotal').textContent = formatRupiah(subtotal);
+  document.getElementById('summary-total').textContent = formatRupiah(subtotal);
+
+  // Clear cart
+  document.getElementById('btn-clear-cart').onclick = () => {
+    if (confirm('Kosongkan semua item dari keranjang?')) {
+      Cart.clear();
+      renderCart();
+    }
+  };
+}
+
+function buildCartItem(item) {
+  const imgSrc = resolveAssetUrl(item.image);
+  const imgHtml = imgSrc
+    ? `<img src="${escHtml(imgSrc)}" class="cart-item-img" alt="${escHtml(item.name)}" />`
+    : `<div class="cart-item-img d-flex align-items-center justify-content-center" style="background:var(--gray-100);color:var(--gray-400);font-size:1.5rem"><i class="bi bi-droplet-fill"></i></div>`;
+
+  const variantHtml = item.variant_name
+    ? `<p class="cart-item-variant">${escHtml(item.variant_name)}</p>`
+    : '';
+
+  return `
+    ${imgHtml}
+    <div class="cart-item-info">
+      <a href="product?id=${item.product_id}" style="text-decoration:none">
+        <p class="cart-item-name">${escHtml(item.name)}</p>
+      </a>
+      ${variantHtml}
+      <p class="cart-item-price mt-1">${formatRupiah(item.price)}</p>
+      <!-- Qty controls -->
+      <div class="qty-input-group mt-2" style="transform:scale(0.88);transform-origin:left">
+        <button class="qty-btn" data-qty-minus="${escHtml(item.id)}">
+          <i class="bi bi-dash"></i>
+        </button>
+        <span class="qty-display" id="qty-${escHtml(item.id)}">${item.qty}</span>
+        <button class="qty-btn" data-qty-plus="${escHtml(item.id)}">
+          <i class="bi bi-plus"></i>
+        </button>
+      </div>
+    </div>
+    <div class="text-end">
+      <p style="font-weight:700;font-size:0.92rem;color:var(--gold-dark)">${formatRupiah(item.price * item.qty)}</p>
+      <button class="cart-item-remove mt-1" data-remove="${escHtml(item.id)}" title="Hapus">
+        <i class="bi bi-trash3"></i>
+      </button>
+    </div>
+  `;
+}
+
+function getQtyVal(itemId) {
+  const el = document.getElementById(`qty-${itemId}`);
+  return el ? parseInt(el.textContent) : 1;
+}
+
+// Re-bind after first render (qty buttons use data-qty-minus / data-qty-plus)
+document.getElementById('cart-items-container')?.addEventListener('click', e => {
+  const minusBtn = e.target.closest('[data-qty-minus]');
+  const plusBtn  = e.target.closest('[data-qty-plus]');
+  const removeBtn = e.target.closest('[data-remove]');
+
+  if (minusBtn) {
+    Cart.updateQty(minusBtn.dataset.qtyMinus, getQtyVal(minusBtn.dataset.qtyMinus) - 1);
+    renderCart();
+  }
+  if (plusBtn) {
+    Cart.updateQty(plusBtn.dataset.qtyPlus, getQtyVal(plusBtn.dataset.qtyPlus) + 1);
+    renderCart();
+  }
+  if (removeBtn) {
+    Cart.remove(removeBtn.dataset.remove);
+    renderCart();
+  }
+});
+
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ---- Stock validation before checkout ---- */
+function bindCheckoutButton() {
+  const btn = document.getElementById('btn-checkout');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const items = Cart.all();
+    if (!items.length) return;
+
+    const txtEl = document.getElementById('btn-checkout-text');
+    const spnEl = document.getElementById('btn-checkout-spinner');
+    btn.disabled = true;
+    txtEl.classList.add('d-none');
+    spnEl.classList.remove('d-none');
+
+    try {
+      const errors = [];
+      // Check each unique product's current stock via API
+      const checked = new Map();
+      for (const item of items) {
+        const pid = item.product_id;
+        if (!checked.has(pid)) {
+          const res = await axios.get(`/api/products/${pid}`);
+          checked.set(pid, res.data.data || res.data);
+        }
+        const p = checked.get(pid);
+        // Find available stock: variant or base
+        let available;
+        if (item.variant_id && p.variants?.length) {
+          const v = p.variants.find(v => String(v.id) === String(item.variant_id));
+          available = v ? v.stock : 0;
+        } else {
+          available = p.total_stock ?? p.stock ?? 0;
+        }
+        if (available < item.qty) {
+          const label = item.name + (item.variant_name ? ` (${item.variant_name})` : '');
+          if (available === 0) {
+            errors.push(`${label} sudah habis stok.`);
+          } else {
+            errors.push(`${label}: stok tersisa ${available}, keranjang ${item.qty}.`);
+          }
+        }
+      }
+
+      if (errors.length) {
+        const listHtml = `<ul class="swal-stock-list">${errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Stok Tidak Mencukupi',
+          html: listHtml,
+          confirmButtonText: '<i class="bi bi-check-lg me-1"></i> Oke, mengerti',
+          confirmButtonColor: '#C9A84C',
+          customClass: { confirmButton: 'swal-gold-btn' },
+          buttonsStyling: false,
+        });
+        return;
+      }
+
+      window.location.href = 'checkout';
+    } catch (e) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Gagal Memeriksa Stok',
+        text: 'Terjadi kesalahan saat mengecek stok. Silakan coba lagi.',
+        confirmButtonText: 'Coba Lagi',
+        confirmButtonColor: '#C9A84C',
+        customClass: { confirmButton: 'swal-gold-btn' },
+        buttonsStyling: false,
+      });
+    } finally {
+      btn.disabled = false;
+      txtEl.classList.remove('d-none');
+      spnEl.classList.add('d-none');
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => { pageInit(); bindCheckoutButton(); });
+} else {
+  pageInit();
+  bindCheckoutButton();
+}
+</script>
+</body>
+</html>

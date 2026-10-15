@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manajemen Role — Admin Toko Albi Parfum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/admin.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="d-flex">
+  <div id="admin-sidebar"></div>
+  <div class="admin-main-wrap flex-grow-1">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div id="alert-container" class="mb-3"></div>
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h5 class="fw-semibold mb-0">Manajemen Role</h5>
+          <p class="text-muted small mb-0">Kelola role dan hak akses menu admin</p>
+        </div>
+        <button class="btn-admin-gold ms-auto" id="btn-add-role">
+          <i class="bi bi-plus-lg me-1"></i>Tambah Role
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="admin-card">
+        <div id="roles-loading" class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat data…</div>
+        <div id="roles-empty" class="admin-empty d-none">
+          <i class="bi bi-shield-lock fs-1 text-muted"></i>
+          <p class="mt-2 text-muted">Belum ada role.</p>
+        </div>
+        <div class="table-responsive d-none" id="roles-table-wrap">
+          <table class="admin-table w-100">
+            <thead>
+              <tr>
+                <th>Nama Role</th>
+                <th>Slug</th>
+                <th>Tipe</th>
+                <th>Jumlah User</th>
+                <th>Hak Akses</th>
+                <th class="text-end">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="roles-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /.admin-content -->
+  </div>
+</div>
+
+<!-- ============================================================
+     Modal: Add / Edit Role
+     ============================================================ -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="roleModalLabel">Tambah Role</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="role-form" novalidate>
+          <input type="hidden" id="role-id" />
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label class="admin-form-label">Nama Role <span class="text-danger">*</span></label>
+              <input type="text" id="role-name" class="admin-form-control" placeholder="cth: Admin Gudang" required />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="admin-form-label">Slug <span class="text-danger">*</span></label>
+              <input type="text" id="role-slug" class="admin-form-control" placeholder="cth: admin_gudang" required />
+              <small class="text-muted">Huruf kecil, tanpa spasi (gunakan _)</small>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" id="role-is-super" role="switch" />
+              <label class="form-check-label" for="role-is-super">
+                <strong>Super Admin</strong> — melewati semua pengecekan izin
+              </label>
+            </div>
+          </div>
+
+          <div id="permissions-section">
+            <label class="admin-form-label fw-semibold mb-2">Hak Akses Menu</label>
+            <p class="text-muted small mb-2">Centang menu yang bisa diakses oleh role ini.</p>
+            <div class="row g-2" id="permissions-grid">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="admin-btn admin-btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="admin-btn admin-btn-primary" id="btn-save-role">
+          <span id="save-role-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
+          Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pageInit);
+} else {
+  pageInit();
+}
+
+function pageInit() {
+  if (!AdminAuth.requireAuth()) return;
+  if (!AdminAuth.hasPermission('roles')) {
+    location.href = 'dashboard';
+    return;
+  }
+  AdminAuth.buildLayout('Manajemen Role', 'roles');
+  loadRoles();
+  bindEvents();
+}
+
+/* ============================================================
+   Menu permission definitions — must match navItems in admin-auth.js
+   ============================================================ */
+const ALL_MENUS = [
+  { id: 'dashboard',   label: 'Dashboard',      icon: 'bi-grid-1x2' },
+  { id: 'products',    label: 'Produk',          icon: 'bi-box-seam' },
+  { id: 'categories',  label: 'Kategori',        icon: 'bi-tags' },
+  { id: 'tiers',       label: 'Size',     icon: 'bi-layers' },
+  { id: 'orders',      label: 'Pesanan',         icon: 'bi-receipt' },
+  { id: 'customers',   label: 'Pelanggan',       icon: 'bi-people' },
+  { id: 'stock',       label: 'Stok',            icon: 'bi-clipboard-data' },
+  { id: 'cashier',     label: 'Kasir',           icon: 'bi-calculator' },
+  { id: 'reports',     label: 'Laporan',         icon: 'bi-bar-chart-line' },
+  { id: 'settings',    label: 'Pengaturan',      icon: 'bi-gear' },
+  { id: 'users',       label: 'Manaj. User',     icon: 'bi-person-badge' },
+  { id: 'roles',       label: 'Manaj. Role',     icon: 'bi-shield-lock' },
+];
+
+let roleModal;
+
+function bindEvents() {
+  roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
+
+  document.getElementById('btn-add-role').addEventListener('click', openCreateModal);
+  document.getElementById('btn-save-role').addEventListener('click', saveRole);
+
+  // Auto-slugify name
+  document.getElementById('role-name').addEventListener('input', function () {
+    const slugField = document.getElementById('role-slug');
+    if (!slugField.dataset.manual) {
+      slugField.value = slugify(this.value).replace(/-/g, '_');
+    }
+  });
+  document.getElementById('role-slug').addEventListener('input', function () {
+    this.dataset.manual = '1';
+  });
+
+  // When is_super changes, toggle permissions section
+  document.getElementById('role-is-super').addEventListener('change', function () {
+    const section = document.getElementById('permissions-section');
+    section.style.opacity = this.checked ? '0.4' : '1';
+    section.style.pointerEvents = this.checked ? 'none' : '';
+  });
+}
+
+/* ============================================================
+   Load roles
+   ============================================================ */
+async function loadRoles() {
+  showTableState('loading');
+  try {
+    const res = await adminApi.get('/roles');
+    const roles = res.data.data || [];
+    if (roles.length === 0) {
+      showTableState('empty');
+    } else {
+      renderTable(roles);
+      showTableState('table');
+    }
+  } catch (e) {
+    showAlert('Gagal memuat data role.', 'error');
+    showTableState('empty');
+  }
+}
+
+function showTableState(state) {
+  document.getElementById('roles-loading').classList.toggle('d-none', state !== 'loading');
+  document.getElementById('roles-empty').classList.toggle('d-none', state !== 'empty');
+  document.getElementById('roles-table-wrap').classList.toggle('d-none', state !== 'table');
+}
+
+function renderTable(roles) {
+  const tbody = document.getElementById('roles-tbody');
+  tbody.innerHTML = roles.map(role => {
+    const permissions = role.permissions || [];
+    const badgeHtml = role.is_super
+      ? `<span class="badge bg-danger">Super Admin</span>`
+      : `<span class="badge bg-secondary">Admin</span>`;
+
+    const permBadges = permissions.slice(0, 5).map(p => {
+      const menu = ALL_MENUS.find(m => m.id === p);
+      return `<span class="badge bg-light text-dark border me-1">${escA(menu ? menu.label : p)}</span>`;
+    }).join('');
+    const moreCount = permissions.length - 5;
+    const moreBadge = moreCount > 0 ? `<span class="badge bg-light text-muted border">+${moreCount}</span>` : '';
+
+    return `
+      <tr>
+        <td class="fw-medium">${escA(role.name)}</td>
+        <td><code>${escA(role.slug)}</code></td>
+        <td>${badgeHtml}</td>
+        <td>${role.users_count ?? 0}</td>
+        <td>${role.is_super ? '<span class="text-muted fst-italic small">Semua menu</span>' : (permBadges + moreBadge || '<span class="text-muted small">Tidak ada</span>')}</td>
+        <td class="text-end">
+          <button class="btn-action btn-edit" onclick="openEditModal(${role.id})">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn-action btn-delete" onclick="deleteRole(${role.id}, '${escA(role.name)}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ============================================================
+   Create / Edit modal
+   ============================================================ */
+function buildPermissionGrid(selected = []) {
+  const grid = document.getElementById('permissions-grid');
+  grid.innerHTML = ALL_MENUS.map(menu => {
+    const checked = selected.includes(menu.id) ? 'checked' : '';
+    return `
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="form-check">
+          <input class="form-check-input perm-check" type="checkbox" value="${menu.id}" id="perm-${menu.id}" ${checked} />
+          <label class="form-check-label" for="perm-${menu.id}">
+            <i class="bi ${menu.icon} me-1 text-muted"></i>${escA(menu.label)}
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openCreateModal() {
+  document.getElementById('role-form').reset();
+  document.getElementById('role-id').value = '';
+  document.getElementById('role-slug').dataset.manual = '';
+  document.getElementById('roleModalLabel').textContent = 'Tambah Role';
+
+  const superChk = document.getElementById('role-is-super');
+  superChk.checked = false;
+  const section = document.getElementById('permissions-section');
+  section.style.opacity = '1';
+  section.style.pointerEvents = '';
+
+  buildPermissionGrid([]);
+  roleModal.show();
+}
+
+async function openEditModal(id) {
+  try {
+    const res = await adminApi.get(`/roles/${id}`);
+    const role = res.data.data;
+
+    document.getElementById('role-id').value = role.id;
+    document.getElementById('role-name').value = role.name;
+    document.getElementById('role-slug').value = role.slug;
+    document.getElementById('role-slug').dataset.manual = '1';
+    document.getElementById('roleModalLabel').textContent = 'Edit Role';
+
+    const superChk = document.getElementById('role-is-super');
+    superChk.checked = !!role.is_super;
+    const section = document.getElementById('permissions-section');
+    section.style.opacity = role.is_super ? '0.4' : '1';
+    section.style.pointerEvents = role.is_super ? 'none' : '';
+
+    buildPermissionGrid(role.permissions || []);
+    roleModal.show();
+  } catch (e) {
+    showAlert('Gagal memuat data role.', 'error');
+  }
+}
+
+async function saveRole() {
+  const id       = document.getElementById('role-id').value;
+  const name     = document.getElementById('role-name').value.trim();
+  const slug     = document.getElementById('role-slug').value.trim();
+  const isSuper  = document.getElementById('role-is-super').checked;
+  const checked  = Array.from(document.querySelectorAll('.perm-check:checked')).map(c => c.value);
+
+  if (!name || !slug) {
+    showAlert('Nama dan slug wajib diisi.', 'warning');
+    return;
+  }
+
+  const spinner = document.getElementById('save-role-spinner');
+  spinner.classList.remove('d-none');
+
+  try {
+    const payload = { name, slug, permissions: checked, is_super: isSuper };
+    if (id) {
+      await adminApi.put(`/roles/${id}`, payload);
+      showAlert('Role berhasil diperbarui.');
+    } else {
+      await adminApi.post('/roles', payload);
+      showAlert('Role berhasil ditambahkan.');
+    }
+    roleModal.hide();
+    loadRoles();
+  } catch (e) {
+    const msg = e.response?.data?.message || e.response?.data?.errors
+      ? Object.values(e.response.data.errors || {}).flat().join(' ') || e.response.data.message
+      : 'Gagal menyimpan role.';
+    showAlert(msg, 'error');
+  } finally {
+    spinner.classList.add('d-none');
+  }
+}
+
+async function deleteRole(id, name) {
+  if (!confirm(`Hapus role "${name}"? Aksi ini tidak bisa dibatalkan.`)) return;
+  try {
+    await adminApi.delete(`/roles/${id}`);
+    showAlert('Role dihapus.');
+    loadRoles();
+  } catch (e) {
+    const msg = e.response?.data?.message || 'Gagal menghapus role.';
+    showAlert(msg, 'error');
+  }
+}
+</script>
+</body>
+</html>

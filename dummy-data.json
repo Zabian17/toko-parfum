@@ -1,0 +1,610 @@
+[
+  {
+    "name": "Midnight Velvet",
+    "description": "Parfum racikan dengan aroma hangat, manis, dan woody yang elegan. Cocok digunakan pada malam hari atau acara formal untuk meningkatkan kepercayaan diri.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Ocean Mist",
+    "description": "Aroma segar dengan nuansa laut dan citrus yang ringan. Memberikan kesan bersih dan energik untuk aktivitas sehari-hari.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Golden Ember",
+    "description": "Perpaduan aroma rempah dan kayu yang hangat, cocok untuk pria yang ingin tampil maskulin dan berkelas.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Silver Breeze",
+    "description": "Aroma ringan dan fresh dengan sentuhan clean yang cocok untuk aktivitas kantor maupun santai.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Dark Spice",
+    "description": "Parfum dengan aroma rempah yang kuat dan sedikit manis, memberikan kesan misterius dan berani.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Urban Forest",
+    "description": "Wangi alami dari kayu dan dedaunan segar, memberikan kesan natural dan maskulin.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Citrus Edge",
+    "description": "Aroma citrus tajam dan segar yang cocok untuk pria aktif dan dinamis.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Iron Musk",
+    "description": "Parfum dengan dominasi musk yang kuat, memberikan kesan bold dan percaya diri.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Fresh Titan",
+    "description": "Aroma segar dengan sedikit sentuhan aquatic yang memberikan kesan powerful dan modern.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Shadow Wood",
+    "description": "Perpaduan woody dan sedikit smoky yang memberikan karakter kuat dan elegan.",
+    "category": "Parfum Pria"
+  },
+
+  {
+    "name": "Rose Bloom",
+    "description": "Aroma bunga mawar yang lembut dan feminin, cocok untuk wanita yang ingin tampil elegan dan anggun.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Vanilla Dream",
+    "description": "Aroma vanilla manis yang creamy dan menenangkan, cocok untuk suasana santai maupun romantis.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Peach Blossom",
+    "description": "Perpaduan buah peach dan bunga yang memberikan kesan ceria, segar, dan youthful.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Soft Jasmine",
+    "description": "Aroma melati lembut yang memberikan nuansa romantis dan feminin.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Sweet Desire",
+    "description": "Wangi manis yang menggoda dengan sentuhan gourmand yang lembut.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Pink Blossom",
+    "description": "Aroma floral segar dengan sentuhan manis yang ringan dan feminin.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Floral Whisper",
+    "description": "Wewangian lembut dengan kombinasi bunga yang elegan dan menenangkan.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Berry Kiss",
+    "description": "Aroma buah berry manis yang segar dan playful.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Golden Petals",
+    "description": "Parfum floral dengan sentuhan mewah dan elegan.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Silk Rose",
+    "description": "Aroma mawar halus seperti sutra yang memberikan kesan classy.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Amber Fusion",
+    "description": "Perpaduan aroma amber dan musk yang seimbang, memberikan kesan hangat dan elegan. Cocok untuk pria maupun wanita dalam berbagai aktivitas.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Citrus Splash",
+    "description": "Aroma citrus segar dengan sentuhan lemon dan jeruk yang memberikan energi dan kesegaran sepanjang hari.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Fresh Cotton",
+    "description": "Wangi bersih seperti pakaian baru dicuci, memberikan kesan higienis, nyaman, dan menenangkan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Green Garden",
+    "description": "Nuansa alami dari dedaunan hijau dan bunga ringan yang memberikan kesan natural dan fresh.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Musk Serenity",
+    "description": "Aroma musk lembut yang memberikan efek tenang, bersih, dan cocok untuk penggunaan sehari-hari.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Aqua Breeze",
+    "description": "Wewangian dengan sentuhan aquatic yang segar dan ringan, cocok untuk aktivitas outdoor.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Nature Calm",
+    "description": "Perpaduan aroma alami dari tumbuhan dan bunga yang memberikan rasa relaksasi dan ketenangan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Crystal Air",
+    "description": "Aroma bersih dan ringan seperti udara pagi hari yang segar.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Soft Musk",
+    "description": "Wangi musk yang lembut dan halus, cocok untuk semua kalangan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Clear Essence",
+    "description": "Aroma minimalis dan clean yang memberikan kesan modern dan profesional.",
+    "category": "Parfum Unisex"
+  },
+
+  {
+    "name": "Baby Powder Soft",
+    "description": "Aroma lembut seperti bedak bayi yang nyaman dan tidak menyengat, cocok untuk anak-anak.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Candy Fresh",
+    "description": "Wangi manis seperti permen yang memberikan kesan ceria dan menyenangkan.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Little Bloom",
+    "description": "Aroma floral ringan yang lembut dan cocok untuk anak-anak.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Mini Fresh",
+    "description": "Parfum ringan dan segar untuk anak-anak yang aktif sepanjang hari.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Sweet Baby Musk",
+    "description": "Perpaduan musk lembut dan aroma manis yang aman untuk anak.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Happy Kids",
+    "description": "Aroma ceria dengan sentuhan buah-buahan yang menyenangkan.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Tiny Citrus",
+    "description": "Aroma citrus ringan yang segar dan tidak menyengat.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Soft Candy",
+    "description": "Wangi manis ringan seperti permen kapas yang lembut.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Baby Fresh Air",
+    "description": "Aroma bersih dan segar yang cocok untuk anak-anak.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Little Joy",
+    "description": "Parfum dengan aroma ringan dan ceria untuk anak-anak aktif.",
+    "category": "Parfum Anak"
+  },
+
+  {
+    "name": "Luxury Gift Set Amber",
+    "description": "Set parfum dengan aroma amber premium yang cocok dijadikan hadiah elegan.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Floral Gift Collection",
+    "description": "Koleksi parfum floral dengan berbagai varian aroma bunga yang cocok sebagai hadiah.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Sweet Gift Box",
+    "description": "Paket parfum dengan aroma manis yang dikemas menarik untuk hadiah spesial.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Premium Essence Set",
+    "description": "Set parfum premium dengan aroma pilihan terbaik dan kemasan eksklusif.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Romantic Gift Pack",
+    "description": "Paket parfum dengan aroma romantis yang cocok untuk pasangan.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Elegant Box Collection",
+    "description": "Set parfum dengan kemasan elegan dan aroma mewah.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Daily Fresh Set",
+    "description": "Kombinasi parfum segar untuk penggunaan sehari-hari dalam satu paket.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Signature Gift Set",
+    "description": "Set parfum signature dengan aroma khas dan unik.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Classic Gift Pack",
+    "description": "Paket parfum klasik dengan aroma timeless.",
+    "category": "Gift Set"
+  },
+  {
+    "name": "Modern Gift Box",
+    "description": "Set parfum dengan aroma modern dan kemasan minimalis.",
+    "category": "Gift Set"
+  },
+
+  {
+    "name": "Imported Fresh Blend",
+    "description": "Parfum racikan dengan inspirasi aroma internasional yang segar dan modern.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Global Musk Essence",
+    "description": "Aroma musk dengan karakter global yang elegan dan tahan lama.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "International Citrus Mix",
+    "description": "Perpaduan citrus dari berbagai inspirasi dunia yang segar.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Premium World Blend",
+    "description": "Parfum dengan kombinasi aroma terbaik dari berbagai inspirasi global.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Luxury Imported Touch",
+    "description": "Aroma mewah dengan sentuhan internasional yang eksklusif.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Global Fresh Air",
+    "description": "Wewangian segar dengan inspirasi udara bersih dari berbagai negara.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "World Essence",
+    "description": "Parfum dengan karakter universal yang cocok untuk semua kalangan.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Imported Floral Blend",
+    "description": "Perpaduan aroma bunga dengan inspirasi internasional yang elegan.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Elite Global Scent",
+    "description": "Aroma eksklusif dengan kualitas premium dan karakter global.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Universal Aroma",
+    "description": "Parfum dengan aroma netral dan disukai banyak orang dari berbagai kalangan.",
+    "category": "Parfum Import"
+  }  ,
+  {
+    "name": "Morning Citrus Glow",
+    "description": "Aroma citrus segar dengan sentuhan manis yang ringan, cocok digunakan di pagi hari untuk memberikan energi dan semangat.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Woody Intense",
+    "description": "Parfum dengan dominasi aroma kayu yang kuat dan elegan, cocok untuk pria yang ingin tampil maskulin dan berkarakter.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Floral Harmony",
+    "description": "Perpaduan berbagai aroma bunga yang harmonis dan lembut, memberikan kesan feminin dan menenangkan.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Fresh Lemon Spark",
+    "description": "Aroma lemon segar yang menyegarkan dengan sedikit sentuhan manis, cocok untuk aktivitas harian.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Velvet Musk",
+    "description": "Aroma musk yang lembut dengan sentuhan elegan, memberikan kesan hangat dan nyaman.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Night Oud Essence",
+    "description": "Parfum dengan aroma oud yang kuat dan mewah, cocok untuk acara malam dan suasana formal.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Sweet Berry Cream",
+    "description": "Perpaduan aroma buah berry manis dengan sentuhan creamy yang lembut dan menggoda.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Green Tea Fresh",
+    "description": "Aroma teh hijau yang segar dan menenangkan, cocok untuk penggunaan sehari-hari.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Aqua Marine Soft",
+    "description": "Wewangian aquatic yang ringan dan segar, memberikan kesan bersih dan modern.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Golden Vanilla Touch",
+    "description": "Aroma vanilla manis dengan sentuhan hangat yang memberikan kesan elegan dan cozy.",
+    "category": "Parfum Wanita"
+  },
+
+  {
+    "name": "Spicy Wood Fusion",
+    "description": "Perpaduan aroma kayu dan rempah yang kuat, cocok untuk pria yang ingin tampil berani dan berbeda.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Soft Floral Mist",
+    "description": "Aroma floral yang lembut dan ringan, memberikan kesan segar dan feminin sepanjang hari.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Coconut Breeze",
+    "description": "Aroma kelapa yang segar dan tropis, cocok untuk suasana santai dan liburan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Elegant Powder",
+    "description": "Aroma powdery yang lembut dan elegan, memberikan kesan bersih dan rapi.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Urban Night Scent",
+    "description": "Parfum dengan aroma modern dan sedikit smoky, cocok untuk suasana malam di perkotaan.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Sweet Caramel Touch",
+    "description": "Aroma karamel manis dengan sentuhan hangat yang menggoda dan tahan lama.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Herbal Fresh Mix",
+    "description": "Perpaduan aroma herbal segar yang memberikan kesan alami dan menenangkan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Cool Mint Splash",
+    "description": "Aroma mint dingin yang menyegarkan dan memberikan sensasi fresh sepanjang hari.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Luxury Oud Gold",
+    "description": "Parfum dengan aroma oud premium yang mewah dan eksklusif.",
+    "category": "Parfum Import"
+  },
+  {
+    "name": "Signature Floral Set",
+    "description": "Set parfum dengan berbagai aroma floral pilihan yang cocok untuk hadiah spesial.",
+    "category": "Gift Set"
+  },
+
+  {
+    "name": "Daily Fresh Aroma",
+    "description": "Aroma ringan dan segar yang cocok digunakan setiap hari untuk aktivitas santai maupun kerja.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Warm Spice Glow",
+    "description": "Perpaduan aroma rempah hangat yang memberikan kesan nyaman dan elegan.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Lovely Blossom Pink",
+    "description": "Aroma bunga yang manis dan feminin dengan sentuhan segar.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Fresh Apple Mix",
+    "description": "Aroma buah apel segar yang ringan dan menyenangkan.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Elegant Musk White",
+    "description": "Musk putih yang lembut dan bersih, memberikan kesan elegan dan minimalis.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Night Vanilla Dark",
+    "description": "Aroma vanilla yang lebih dalam dan misterius, cocok untuk malam hari.",
+    "category": "Parfum Wanita"
+  },
+  {
+    "name": "Ocean Deep Blue",
+    "description": "Aroma laut yang dalam dan segar, memberikan kesan maskulin dan modern.",
+    "category": "Parfum Pria"
+  },
+  {
+    "name": "Soft Lavender Calm",
+    "description": "Aroma lavender yang menenangkan dan cocok untuk relaksasi.",
+    "category": "Parfum Unisex"
+  },
+  {
+    "name": "Candy Sweet Pop",
+    "description": "Wangi manis ceria yang cocok untuk anak-anak dan remaja.",
+    "category": "Parfum Anak"
+  },
+  {
+    "name": "Little Fresh Bloom",
+    "description": "Aroma floral ringan yang cocok untuk anak-anak dengan kesan segar.",
+    "category": "Parfum Anak"
+  },
+{
+  "name": "Sunrise Citrus Fresh",
+  "description": "Aroma citrus segar yang terinspirasi dari pagi hari, memberikan energi dan semangat untuk memulai aktivitas dengan lebih percaya diri.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Deep Forest Wood",
+  "description": "Parfum dengan nuansa kayu alami yang kuat dan dalam, memberikan kesan maskulin dan dekat dengan alam.",
+  "category": "Parfum Pria"
+},
+{
+  "name": "Blooming Garden",
+  "description": "Perpaduan berbagai bunga segar yang memberikan aroma alami, feminin, dan menenangkan sepanjang hari.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Fresh Lime Splash",
+  "description": "Aroma jeruk nipis yang segar dan ringan, cocok untuk penggunaan siang hari dan aktivitas outdoor.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Pure Musk Clean",
+  "description": "Aroma musk yang bersih dan lembut, memberikan kesan minimalis, modern, dan profesional.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Royal Oud Blend",
+  "description": "Parfum dengan aroma oud yang kaya dan mewah, cocok untuk acara formal dan suasana eksklusif.",
+  "category": "Parfum Import"
+},
+{
+  "name": "Sweet Cherry Glow",
+  "description": "Aroma buah cherry manis yang segar dan ceria, cocok untuk wanita muda dan aktif.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Green Herbal Fresh",
+  "description": "Perpaduan aroma herbal dan daun hijau yang memberikan kesan alami dan menyegarkan.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Aqua Light Splash",
+  "description": "Wewangian aquatic ringan yang memberikan kesan segar dan nyaman sepanjang hari.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Vanilla Soft Cream",
+  "description": "Aroma vanilla lembut dengan sentuhan creamy yang memberikan kesan hangat dan menenangkan.",
+  "category": "Parfum Wanita"
+},
+
+{
+  "name": "Bold Spice Night",
+  "description": "Parfum dengan aroma rempah yang kuat dan hangat, cocok untuk malam hari dan suasana formal.",
+  "category": "Parfum Pria"
+},
+{
+  "name": "Soft Floral Pink",
+  "description": "Aroma floral lembut dengan sentuhan manis yang memberikan kesan feminin dan elegan.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Tropical Coconut Fresh",
+  "description": "Aroma kelapa tropis yang segar dan ringan, cocok untuk suasana santai dan liburan.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Elegant Powder White",
+  "description": "Wewangian powdery yang lembut dan bersih, memberikan kesan rapi dan elegan.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "City Night Bold",
+  "description": "Aroma modern dengan sedikit sentuhan smoky yang cocok untuk kehidupan malam di perkotaan.",
+  "category": "Parfum Pria"
+},
+{
+  "name": "Caramel Sweet Delight",
+  "description": "Aroma karamel manis yang hangat dan menggoda, cocok untuk momen spesial.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Herbal Calm Essence",
+  "description": "Perpaduan aroma herbal yang menenangkan dan memberikan efek relaksasi.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Minty Fresh Cool",
+  "description": "Aroma mint segar yang memberikan sensasi dingin dan menyegarkan.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Luxury Gold Oud",
+  "description": "Parfum dengan aroma oud premium yang memberikan kesan mewah dan eksklusif.",
+  "category": "Parfum Import"
+},
+{
+  "name": "Romantic Gift Collection",
+  "description": "Set parfum dengan aroma romantis yang cocok sebagai hadiah untuk orang tersayang.",
+  "category": "Gift Set"
+},
+
+{
+  "name": "Daily Clean Fresh",
+  "description": "Aroma bersih dan ringan yang cocok untuk penggunaan sehari-hari dalam berbagai aktivitas.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Warm Woody Spice",
+  "description": "Perpaduan aroma kayu dan rempah yang hangat dan maskulin.",
+  "category": "Parfum Pria"
+},
+{
+  "name": "Lovely Floral Touch",
+  "description": "Aroma bunga yang lembut dan manis, memberikan kesan feminin dan anggun.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Apple Fresh Crisp",
+  "description": "Aroma buah apel segar yang ringan dan menyenangkan untuk digunakan sehari-hari.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "White Musk Elegant",
+  "description": "Musk putih yang lembut dan bersih, cocok untuk semua kalangan.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Dark Vanilla Night",
+  "description": "Aroma vanilla yang lebih dalam dan misterius, cocok untuk suasana malam.",
+  "category": "Parfum Wanita"
+},
+{
+  "name": "Ocean Fresh Wave",
+  "description": "Aroma laut segar yang memberikan kesan energik dan maskulin.",
+  "category": "Parfum Pria"
+},
+{
+  "name": "Lavender Relax Calm",
+  "description": "Aroma lavender yang menenangkan dan membantu relaksasi.",
+  "category": "Parfum Unisex"
+},
+{
+  "name": "Kids Sweet Candy",
+  "description": "Aroma manis ceria yang cocok untuk anak-anak dengan kesan playful.",
+  "category": "Parfum Anak"
+},
+{
+  "name": "Little Fresh Joy",
+  "description": "Wewangian ringan dan segar untuk anak-anak aktif.",
+  "category": "Parfum Anak"
+}
+]

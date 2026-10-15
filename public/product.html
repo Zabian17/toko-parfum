@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">Detail Produk — Toko Albi Parfum</title>
+  <meta name="description" id="page-desc" content="Detail parfum di Toko Albi Parfum." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="css/theme.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar-albi">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+    <a href="./" class="nav-link-albi d-none d-md-inline">Beranda</a>
+    <a href="katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
+    <a href="lacak" class="nav-link-albi d-none d-md-inline">Lacak Pesanan</a>
+    <a href="cart" class="nav-link-albi position-relative px-2">
+      <i class="bi bi-bag" style="font-size:1.2rem"></i>
+      <span class="cart-badge" data-cart-badge style="display:none">0</span>
+    </a>
+  </div>
+</nav>
+
+<!-- SKELETON while loading -->
+<div id="skeleton-wrap" class="container py-5">
+  <div class="row g-4">
+    <div class="col-12 col-md-5">
+      <div class="skeleton" style="aspect-ratio:1;border-radius:8px"></div>
+    </div>
+    <div class="col-12 col-md-7">
+      <div class="skeleton mb-3" style="height:32px;width:60%"></div>
+      <div class="skeleton mb-2" style="height:16px;width:40%"></div>
+      <div class="skeleton mb-4" style="height:28px;width:35%"></div>
+      <div class="skeleton mb-3" style="height:14px"></div>
+      <div class="skeleton mb-2" style="height:14px;width:80%"></div>
+      <div class="skeleton" style="height:14px;width:70%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL CONTENT -->
+<div id="product-wrap" class="d-none">
+  <!-- Breadcrumb -->
+  <div class="container">
+    <nav aria-label="breadcrumb" class="breadcrumb-albi">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/">Beranda</a></li>
+        <li class="breadcrumb-item"><a href="/#katalog">Katalog</a></li>
+        <li class="breadcrumb-item active" id="breadcrumb-name">—</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="container py-4">
+    <div class="row g-5">
+
+      <!-- ===== GALLERY ===== -->
+      <div class="col-12 col-md-5">
+        <img id="main-image" src="" alt="" class="product-gallery-main mb-2" loading="lazy" />
+        <div class="product-thumbs" id="thumb-container"></div>
+      </div>
+
+      <!-- ===== INFO ===== -->
+      <div class="col-12 col-md-7">
+        <div id="product-category-label" class="product-card-category mb-1"></div>
+        <h1 id="product-name" class="product-name-detail"></h1>
+        <p id="product-sku" class="product-sku"></p>
+
+        <!-- Price -->
+        <div class="my-3 d-flex align-items-center gap-3">
+          <span id="product-price" class="product-price-detail"></span>
+        </div>
+
+        <!-- Stock indicator -->
+        <p id="product-stock-label" class="mb-3" style="font-size:0.85rem"></p>
+
+        <!-- Description -->
+        <div id="product-description" class="mb-4" style="color:var(--gray-600);font-size:0.92rem;line-height:1.7"></div>
+
+        <hr class="divider-gold">
+
+        <!-- Variants -->
+        <div id="variant-section" class="mb-4 d-none">
+          <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.6rem">Pilih Ukuran &amp; Grade</p>
+          <div id="variant-btns" class="d-flex gap-2 flex-wrap"></div>
+          <p id="variant-stock-label" class="mt-2" style="font-size:0.8rem;color:var(--gray-600)"></p>
+        </div>
+
+        <!-- Quantity -->
+        <div class="mb-4">
+          <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.6rem">Jumlah</p>
+          <div class="qty-input-group">
+            <button class="qty-btn" id="qty-minus"><i class="bi bi-dash"></i></button>
+            <span class="qty-display" id="qty-display">1</span>
+            <button class="qty-btn" id="qty-plus"><i class="bi bi-plus"></i></button>
+          </div>
+        </div>
+
+        <!-- Add to cart -->
+        <div class="d-flex gap-3 flex-wrap">
+          <button id="btn-add-cart" class="btn-gold" style="flex:1;max-width:260px;font-size:0.95rem;padding:0.75rem 0">
+            <i class="bi bi-bag-plus me-2"></i>Tambah ke Keranjang
+          </button>
+          <a href="cart" id="btn-buy-now" class="btn-black d-none" style="flex:1;max-width:200px;font-size:0.95rem;padding:0.75rem 0;text-align:center;border-radius:4px">
+            Beli Sekarang
+          </a>
+        </div>
+
+        <!-- Tags -->
+        <div id="tag-section" class="mt-4 d-none">
+          <span style="font-size:0.78rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.08em">Tags: </span>
+          <span id="tag-list"></span>
+        </div>
+      </div>
+    </div><!-- /row -->
+  </div><!-- /container -->
+
+  <!-- ===== RELATED PRODUCTS ===== -->
+  <div class="container py-4 pb-5">
+    <hr class="divider-gold">
+    <h2 class="section-title mb-4">Produk Terkait</h2>
+    <div id="related-grid" class="row row-cols-2 row-cols-md-4 g-3"></div>
+  </div>
+</div><!-- /#product-wrap -->
+
+<!-- NOT FOUND state -->
+<div id="not-found" class="container py-5 d-none">
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="bi bi-exclamation-circle"></i></div>
+    <p class="empty-state-title">Produk tidak ditemukan</p>
+    <a href="/" class="btn-gold mt-3 d-inline-block" style="text-decoration:none;padding:0.6rem 1.6rem">Kembali ke Katalog</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">Albi <span>Parfum</span></div>
+        <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
+      </div>
+      <div class="col-6 col-md-2">
+        <h6>Navigasi</h6>
+        <a href="./">Beranda</a>
+        <a href="katalog">Katalog</a>
+        <a href="cart">Keranjang</a>
+        <a href="lacak">Lacak Pesanan</a>
+      </div>
+      <div class="col-6 col-md-3">
+        <h6>Bantuan</h6>
+        <a href="pages/cara-pemesanan">Cara Pemesanan</a>
+        <a href="pages/pengiriman">Pengiriman</a>
+        <a href="pages/kebijakan-retur">Kebijakan Retur</a>
+      </div>
+      <div class="col-12 col-md-3">
+        <h6>Kontak</h6>
+        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
+      </div>
+    </div>
+    <hr class="footer-divider" />
+    <p class="footer-copy">&copy; 2025 Toko Albi Parfum. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script>
+/* ===================================================
+   product.html — Page Controller
+   =================================================== */
+let product = null;
+let selectedVariant = null;
+let qty = 1;
+
+async function pageInit() {
+  Cart._notifyBadge();
+
+  const slug = getParam('slug');
+  if (!slug) { showNotFound(); return; }
+
+  try {
+    const res = await ProductAPI.bySlug(slug);
+    product = res.data.data || res.data;
+    renderProduct();
+  } catch (e) {
+    showNotFound();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pageInit);
+} else {
+  pageInit();
+}
+
+function renderProduct() {
+  document.getElementById('skeleton-wrap').classList.add('d-none');
+  document.getElementById('product-wrap').classList.remove('d-none');
+
+  // Meta
+  document.getElementById('page-title').textContent = `${product.name} — Toko Albi Parfum`;
+  document.getElementById('page-desc').content = product.description || product.name;
+  document.getElementById('breadcrumb-name').textContent = product.name;
+
+  // Basic info
+  document.getElementById('product-name').textContent = product.name;
+  document.getElementById('product-category-label').textContent = product.category?.name || '';
+  document.getElementById('product-sku').textContent = '';
+
+  // Price — show starting price from cheapest active variant
+  document.getElementById('product-price').textContent = product.min_price != null
+    ? 'Mulai ' + formatRupiah(product.min_price)
+    : '—';
+
+  // Stock
+  renderStockLabel(product.stock);
+
+  // Description
+  const descEl = document.getElementById('product-description');
+  descEl.innerHTML = product.description
+    ? product.description.replace(/\n/g, '<br>')
+    : '<em style="color:var(--gray-400)">Tidak ada deskripsi.</em>';
+
+  // Gallery
+  renderGallery();
+
+  // Variants
+  renderVariants();
+
+  // Tags
+  renderTags();
+
+  // Related
+  loadRelated();
+
+  // Qty buttons
+  document.getElementById('qty-minus').addEventListener('click', () => changeQty(-1));
+  document.getElementById('qty-plus').addEventListener('click', () => changeQty(1));
+
+  // Add to cart
+  document.getElementById('btn-add-cart').addEventListener('click', addToCart);
+}
+
+/* ---- Gallery ---- */
+function renderGallery() {
+  const mainImg = document.getElementById('main-image');
+  const thumbs = document.getElementById('thumb-container');
+
+  // Build combined list: thumbnail first, then gallery images (deduplicated)
+  const galleryImages = (product.images || []).map(img => img.image_url).filter(Boolean);
+  const allImages = [];
+  if (product.thumbnail) allImages.push(resolveAssetUrl(product.thumbnail));
+  galleryImages.forEach(url => {
+    const resolved = resolveAssetUrl(url);
+    const resolvedThumb = resolveAssetUrl(product.thumbnail);
+    if (resolved !== resolvedThumb) allImages.push(resolved);
+  });
+
+  if (allImages.length === 0) {
+    mainImg.src = 'https://via.placeholder.com/500x500/F8F8F8/AAAAAA?text=No+Image';
+    mainImg.alt = 'No image';
+    return;
+  }
+
+  mainImg.src = allImages[0];
+  mainImg.alt = product.name;
+
+  allImages.forEach((url, i) => {
+    const el = document.createElement('img');
+    el.src = url;
+    el.alt = `Gambar ${i + 1}`;
+    el.loading = 'lazy';
+    el.className = 'product-thumb' + (i === 0 ? ' active' : '');
+    el.addEventListener('click', () => {
+      mainImg.src = el.src;
+      document.querySelectorAll('.product-thumb').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    });
+    thumbs.appendChild(el);
+  });
+}
+
+/* ---- Variants ---- */
+function renderVariants() {
+  const variants = product.variants || [];
+  const section = document.getElementById('variant-section');
+  const container = document.getElementById('variant-btns');
+
+  if (variants.length === 0) return;
+  section.classList.remove('d-none');
+
+  variants.forEach(v => {
+    const btn = document.createElement('button');
+    btn.className = 'variant-btn' + (v.stock === 0 ? ' out-of-stock' : '');
+    btn.innerHTML = `<span>${escHtml(v.name)}</span><small style="font-size:.72em;display:block;margin-top:1px;opacity:.8">${formatRupiah(v.price)}</small>`;
+    btn.dataset.variantId = v.id;
+    if (v.stock === 0) btn.disabled = true;
+
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedVariant = v;
+      qty = 1;
+      updateQtyDisplay();
+      document.getElementById('variant-stock-label').textContent =
+        `Stok: ${v.stock > 0 ? v.stock + ' tersisa' : 'Habis'}`;
+      // Update price display to selected variant's tier price
+      document.getElementById('product-price').textContent = formatRupiah(v.price);
+    });
+    container.appendChild(btn);
+  });
+}
+
+/* ---- Tags ---- */
+function renderTags() {
+  const tags = product.tags || [];
+  if (tags.length === 0) return;
+  document.getElementById('tag-section').classList.remove('d-none');
+  document.getElementById('tag-list').innerHTML = tags.map(t =>
+    `<a href="/?tag=${encodeURIComponent(t.name)}" class="badge-new me-1" style="text-decoration:none">${escHtml(t.name)}</a>`
+  ).join('');
+}
+
+/* ---- Qty ---- */
+function changeQty(delta) {
+  const maxStock = selectedVariant ? selectedVariant.stock : (product.stock || 99);
+  qty = Math.max(1, Math.min(qty + delta, maxStock));
+  updateQtyDisplay();
+}
+
+function updateQtyDisplay() {
+  document.getElementById('qty-display').textContent = qty;
+}
+
+/* ---- Stock label ---- */
+function renderStockLabel(stock) {
+  const el = document.getElementById('product-stock-label');
+  if (stock === 0) {
+    el.innerHTML = `<span style="color:#e53935"><i class="bi bi-x-circle me-1"></i>Stok Habis</span>`;
+    document.getElementById('btn-add-cart').disabled = true;
+  } else if (stock <= 5) {
+    el.innerHTML = `<span style="color:#f57c00"><i class="bi bi-exclamation-circle me-1"></i>Stok Terbatas (${stock})</span>`;
+  } else {
+    el.innerHTML = `<span style="color:#388e3c"><i class="bi bi-check-circle me-1"></i>Tersedia</span>`;
+  }
+}
+
+/* ---- Add to cart ---- */
+function addToCart() {
+  const variants = product.variants || [];
+  if (variants.length > 0 && !selectedVariant) {
+    Toast.show('Pilih ukuran terlebih dahulu', 'error');
+    return;
+  }
+
+  const price    = selectedVariant?.price ?? product.min_price ?? 0;
+  const stock    = selectedVariant ? selectedVariant.stock : (product.stock || 99);
+  const variantId   = selectedVariant?.id || null;
+  const variantName = selectedVariant?.name || null;
+  const itemId = variantId ? `${product.id}-${variantId}` : `${product.id}`;
+
+  Cart.add({
+    id: itemId,
+    product_id: product.id,
+    variant_id: variantId,
+    name: product.name,
+    variant_name: variantName,
+    price,
+    qty,
+    image: product.thumbnail || null,
+    stock,
+  });
+
+  // Show buy-now button after adding
+  document.getElementById('btn-buy-now').classList.remove('d-none');
+}
+
+/* ---- Related products ---- */
+async function loadRelated() {
+  try {
+    const res = await ProductAPI.list({
+      category_id: product.category_id,
+      per_page: 4,
+      exclude: product.id,
+    });
+    const related = (res.data.data || res.data).filter(p => p.id !== product.id).slice(0, 4);
+    const grid = document.getElementById('related-grid');
+    if (related.length === 0) { grid.closest('.container').style.display = 'none'; return; }
+    related.forEach(p => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = buildRelatedCard(p);
+      grid.appendChild(col);
+    });
+  } catch (e) {
+    document.getElementById('related-grid').closest('.container').style.display = 'none';
+  }
+}
+
+function buildRelatedCard(p) {
+  const imgSrc = resolveAssetUrl(p.thumbnail) || null;
+  const imgHtml = imgSrc
+    ? `<img src="${imgSrc}" class="product-card-img" alt="${escHtml(p.name)}" loading="lazy">`
+    : `<div class="product-card-img-placeholder"><i class="bi bi-droplet"></i></div>`;
+  return `
+    <div class="product-card">
+      <a href="product?slug=${p.slug}" class="product-card-img-wrap d-block" style="text-decoration:none">${imgHtml}</a>
+      <div class="product-card-body">
+        <div class="product-card-category">${escHtml(p.category?.name || 'Artisan Fragrance')}</div>
+        <a href="product?slug=${p.slug}" style="text-decoration:none">
+          <p class="product-card-name">${escHtml(p.name)}</p>
+        </a>
+        <div class="product-card-price">${p.min_price != null ? 'Mulai ' + formatRupiah(p.min_price) : ''}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showNotFound() {
+  document.getElementById('skeleton-wrap').classList.add('d-none');
+  document.getElementById('not-found').classList.remove('d-none');
+}
+
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>

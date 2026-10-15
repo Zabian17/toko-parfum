@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toko Albi Parfum — Parfum Pilihan Terbaik</title>
+  <meta name="description" content="Parfum original berkualitas tinggi dengan harga terjangkau. Temukan koleksi parfum terbaik di Toko Albi Parfum." />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Theme -->
+  <link href="css/theme.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar-albi">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+
+    <!-- Search -->
+    <div class="search-bar d-none d-md-flex" style="width:280px">
+      <input type="text" id="search-input" placeholder="Cari parfum…" />
+      <button id="search-btn"><i class="bi bi-search"></i></button>
+    </div>
+
+    <!-- Nav links -->
+    <a href="./" class="nav-link-albi active d-none d-md-inline">Beranda</a>
+    <a href="katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
+    <a href="lacak" class="nav-link-albi d-none d-md-inline">Lacak Pesanan</a>
+
+    <!-- Cart icon -->
+    <a href="cart" class="nav-link-albi position-relative px-2">
+      <i class="bi bi-bag" style="font-size:1.2rem"></i>
+      <span class="cart-badge" data-cart-badge style="display:none">0</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="container position-relative">
+    <div class="hero-editorial-border">
+      <p class="hero-eyebrow">Haute Parfumerie • Jakarta</p>
+      <h1 class="hero-title">
+        The Art of Scent, <span>Distilled.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Koleksi extrait de parfum eksklusif dengan konsentrasi aroma murni berkualitas tinggi.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="#katalog" class="btn-primary-albi">
+          <i class="bi bi-grid me-1"></i> Eksplorasi Koleksi
+        </a>
+        <a href="katalog" class="btn-outline-gold" style="border-color:rgba(255,255,255,0.25);color:#FAF8F5">
+          Lihat Katalog Lengkap
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRUST STRIP ===================== -->
+<section class="trust-strip">
+  <div class="container">
+    <div class="row g-4 text-center text-md-start">
+      <div class="col-12 col-md-4">
+        <div class="trust-item justify-content-center justify-content-md-start">
+          <i class="bi bi-droplet-half"></i>
+          <div>
+            <strong>100% Original Extrait</strong>
+            <span>Konsentrasi bibit wangi tinggi & tahan hingga 12 jam</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="trust-item justify-content-center justify-content-md-start">
+          <i class="bi bi-shield-check"></i>
+          <div>
+            <strong>Garansi Pecah Ganti Baru</strong>
+            <span>Pengemasan safety hardbox & garansi tiba aman</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="trust-item justify-content-center justify-content-md-start">
+          <i class="bi bi-truck"></i>
+          <div>
+            <strong>Pengiriman Seluruh Nusantara</strong>
+            <span>Dukungan kurir ekspres & pelacakan status real-time</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CATEGORIES ===================== -->
+<section class="category-filter-wrap">
+  <div class="container">
+    <div id="category-pills" class="d-flex gap-2 flex-wrap align-items-center">
+      <span class="text-uppercase small me-2" style="font-size:0.75rem;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600">Aroma:</span>
+      <button class="filter-pill active" data-category="all">Semua Aroma</button>
+      <!-- Dynamic pills injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRODUCT GRID ===================== -->
+<section class="py-5" id="katalog">
+  <div class="container">
+    <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
+      <div>
+        <h2 class="section-title">Katalog Parfum</h2>
+        <p class="section-subtitle" id="product-count">Memuat produk…</p>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <select id="sort-select" class="form-select form-select-sm" style="width:auto">
+          <option value="latest">Terbaru</option>
+          <option value="price_asc">Harga: Rendah ke Tinggi</option>
+          <option value="price_desc">Harga: Tinggi ke Rendah</option>
+          <option value="name_asc">Nama A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Search bar mobile -->
+    <div class="search-bar d-flex d-md-none mb-4">
+      <input type="text" id="search-input-mobile" placeholder="Cari parfum…" />
+      <button id="search-btn-mobile"><i class="bi bi-search"></i></button>
+    </div>
+
+    <!-- Grid -->
+    <div id="product-grid" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+      <!-- Skeleton placeholders -->
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+      <div class="col"><div class="skeleton skeleton-card"></div></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state d-none">
+      <div class="empty-state-icon"><i class="bi bi-search"></i></div>
+      <p class="empty-state-title">Produk tidak ditemukan</p>
+      <p class="section-subtitle">Coba kata kunci atau filter lain</p>
+    </div>
+
+    <!-- Load more -->
+    <div class="text-center mt-4 d-none" id="load-more-wrap">
+      <button id="load-more-btn" class="btn-outline-gold"><i class="bi bi-arrow-down-circle me-2"></i>Muat Lebih Banyak</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">Albi <span>Parfum</span></div>
+        <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
+      </div>
+      <div class="col-6 col-md-2">
+        <h6>Navigasi</h6>
+        <a href="./">Beranda</a>
+        <a href="katalog">Katalog</a>
+        <a href="cart">Keranjang</a>
+        <a href="lacak">Lacak Pesanan</a>
+      </div>
+      <div class="col-6 col-md-3">
+        <h6>Bantuan</h6>
+        <a href="pages/cara-pemesanan">Cara Pemesanan</a>
+        <a href="pages/pengiriman">Pengiriman</a>
+        <a href="pages/kebijakan-retur">Kebijakan Retur</a>
+      </div>
+      <div class="col-12 col-md-3">
+        <h6>Kontak</h6>
+        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
+        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
+      </div>
+    </div>
+    <hr class="footer-divider" />
+    <p class="footer-copy">&copy; 2025 Toko Albi Parfum. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script>
+/* ===================================================
+   index.html — Page Controller
+   =================================================== */
+
+// Catch any uncaught JS errors
+window.onerror = (msg, src, line, col, err) => {
+  console.error(`[PAGE] ✘ Uncaught error at ${src}:${line} — ${msg}`, err);
+};
+
+let allProducts = [];
+let currentPage = 1;
+let currentCategory = 'all';
+let currentSearch = '';
+let currentSort = 'latest';
+let lastMeta = null;
+
+/* ---- Init — safe for both fast and slow (tunnel) connections ---- */
+async function pageInit() {
+  console.log('%c[PAGE] pageInit started (readyState=' + document.readyState + ')', 'color:#C9A84C;font-weight:bold');
+  try {
+    Cart._notifyBadge();
+    console.log('[PAGE] calling loadCategories...');
+    await loadCategories();
+    console.log('[PAGE] calling loadProducts...');
+    await loadProducts();
+    console.log('[PAGE] calling bindEvents...');
+    bindEvents();
+    console.log('%c[PAGE] init complete', 'color:#27ae60;font-weight:bold');
+  } catch (err) {
+    console.error('[PAGE] ✘ Fatal init error:', err);
+  }
+}
+
+// Run immediately if DOM already ready, otherwise wait for the event
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pageInit);
+} else {
+  pageInit();
+}
+
+/* ---- Load categories ---- */
+async function loadCategories() {
+  try {
+    const res = await CategoryAPI.list();
+    const categories = res.data.data || res.data;
+    const container = document.getElementById('category-pills');
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-pill';
+      btn.dataset.category = cat.id;
+      btn.textContent = cat.name;
+      container.appendChild(btn);
+    });
+  } catch (e) {
+    console.warn('Gagal memuat kategori:', e.message);
+  }
+}
+
+/* ---- Load products ---- */
+async function loadProducts(append = false) {
+  if (!append) {
+    currentPage = 1;
+    showSkeletons();
+  }
+
+  try {
+    const params = {
+      page: currentPage,
+      per_page: 12,
+      sort: currentSort,
+      in_stock: 1,
+    };
+    if (currentCategory !== 'all') params.category_id = currentCategory;
+    if (currentSearch)             params.search = currentSearch;
+
+    const res = await ProductAPI.list(params);
+    const data = res.data;
+    const products = data.data || data;
+    lastMeta = data.meta || null;
+
+    if (!append) allProducts = products;
+    else allProducts = [...allProducts, ...products];
+
+    renderProducts();
+    updateProductCount();
+    toggleLoadMore();
+  } catch (e) {
+    console.error('Gagal memuat produk:', e.message);
+    showEmpty();
+  }
+}
+
+/* ---- Render product cards ---- */
+function renderProducts() {
+  const grid = document.getElementById('product-grid');
+  const empty = document.getElementById('empty-state');
+  grid.innerHTML = '';
+
+  if (allProducts.length === 0) {
+    empty.classList.remove('d-none');
+    return;
+  }
+
+  empty.classList.add('d-none');
+
+  allProducts.forEach((p, i) => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.innerHTML = buildProductCard(p);
+    // Stagger animation
+    const card = col.querySelector('.product-card');
+    if (card) {
+      card.classList.add('product-card-animate');
+      card.style.animationDelay = `${i * 0.06}s`;
+    }
+    grid.appendChild(col);
+  });
+}
+
+function buildProductCard(p) {
+  const imgSrc = resolveAssetUrl(p.thumbnail) || null;
+
+  const imgHtml = imgSrc
+    ? `<img src="${imgSrc}" class="product-card-img" alt="${escHtml(p.name)}" loading="lazy">`
+    : `<div class="product-card-img-placeholder"><i class="bi bi-droplet"></i></div>`;
+
+  const outOfStock = (p.stock ?? 0) === 0;
+  const badgeHtml = p.is_new
+    ? `<span class="badge-new position-absolute" style="top:10px;left:10px">BARU</span>`
+    : (outOfStock ? `<span class="badge-out position-absolute" style="top:10px;left:10px">HABIS</span>` : '');
+
+  const priceFormatted = formatRupiah(p.min_price || p.price || 0);
+
+  return `
+    <div class="product-card">
+      <a href="product?slug=${p.slug}" class="product-card-img-wrap d-block position-relative" style="text-decoration:none">
+        ${imgHtml}
+        ${badgeHtml}
+      </a>
+      <div class="product-card-body">
+        <div class="product-card-category">${escHtml(p.category?.name || 'Artisan Fragrance')}</div>
+        <a href="product?slug=${p.slug}" style="text-decoration:none">
+          <p class="product-card-name">${escHtml(p.name)}</p>
+        </a>
+        <div class="product-card-price">Mulai ${priceFormatted}</div>
+        <a
+          href="product?slug=${p.slug}"
+          class="btn-outline-gold w-100 mt-3 text-center"
+          style="font-size:0.82rem;padding:0.48rem 0;text-decoration:none"
+        >
+          ${outOfStock ? 'Lihat Detail' : '<i class="bi bi-eye me-1"></i>Pilih Ukuran'}
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+/* ---- Quick add to cart (no variant selection — goes to detail if has variants) ---- */
+function quickAddToCart(event, product) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const hasVariants = product.variants && product.variants.length > 0;
+  if (hasVariants) {
+    window.location.href = `product?slug=${product.slug}`;
+    return;
+  }
+
+  Cart.add({
+    id: `${product.id}`,
+    product_id: product.id,
+    variant_id: null,
+    name: product.name,
+    variant_name: null,
+    price: product.price,
+    qty: 1,
+    image: product.thumbnail || null,
+    stock: product.total_stock || 99,
+  });
+}
+
+/* ---- UI helpers ---- */
+function showSkeletons() {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = Array(8).fill(0).map(() =>
+    `<div class="col"><div class="skeleton skeleton-card"></div></div>`
+  ).join('');
+  document.getElementById('empty-state').classList.add('d-none');
+}
+
+function showEmpty() {
+  document.getElementById('product-grid').innerHTML = '';
+  document.getElementById('empty-state').classList.remove('d-none');
+}
+
+function updateProductCount() {
+  const el = document.getElementById('product-count');
+  const total = lastMeta?.total ?? allProducts.length;
+  el.textContent = `Menampilkan ${allProducts.length} dari ${total} produk`;
+}
+
+function toggleLoadMore() {
+  const wrap = document.getElementById('load-more-wrap');
+  if (lastMeta && currentPage < lastMeta.last_page) {
+    wrap.classList.remove('d-none');
+  } else {
+    wrap.classList.add('d-none');
+  }
+}
+
+/* ---- Event bindings ---- */
+function bindEvents() {
+  // Category pills
+  document.getElementById('category-pills').addEventListener('click', e => {
+    const btn = e.target.closest('[data-category]');
+    if (!btn) return;
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentCategory = btn.dataset.category;
+    loadProducts();
+  });
+
+  // Sort
+  document.getElementById('sort-select').addEventListener('change', e => {
+    currentSort = e.target.value;
+    loadProducts();
+  });
+
+  const redirectToCatalog = (query) => {
+    const q = (query || '').trim();
+    const target = q ? `katalog?q=${encodeURIComponent(q)}` : 'katalog';
+    window.location.href = target;
+  };
+
+  // Search desktop (topbar) -> katalog
+  document.getElementById('search-btn').addEventListener('click', () => {
+    redirectToCatalog(document.getElementById('search-input').value);
+  });
+  document.getElementById('search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      redirectToCatalog(document.getElementById('search-input').value);
+    }
+  });
+
+  // Search mobile -> katalog
+  document.getElementById('search-btn-mobile').addEventListener('click', () => {
+    redirectToCatalog(document.getElementById('search-input-mobile').value);
+  });
+  document.getElementById('search-input-mobile').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      redirectToCatalog(document.getElementById('search-input-mobile').value);
+    }
+  });
+
+  // Load more
+  document.getElementById('load-more-btn').addEventListener('click', () => {
+    currentPage++;
+    loadProducts(true);
+  });
+}
+
+/* ---- XSS-safe escape ---- */
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>
