@@ -16,7 +16,7 @@ class RajaOngkirService
 
     public function __construct()
     {
-        $this->apiKey  = config('services.rajaongkir.api_key');
+        $this->apiKey  = (string) (config('services.rajaongkir.api_key') ?? '');
         $this->baseUrl = rtrim(config('services.rajaongkir.base_url'), '/');
         $this->cacheEnabled = (bool) config('services.rajaongkir.cache_enabled', false);
         $this->cacheTtlSeconds = (int) config('services.rajaongkir.cache_ttl', 3600 * 24);
