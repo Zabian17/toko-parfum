@@ -71,7 +71,7 @@ class SettingsSeeder extends Seeder
             // --- Payment ---
             [
                 'key'   => 'midtrans_enabled',
-                'value' => '1',
+                'value' => '0',
                 'group' => 'payment',
                 'label' => 'Aktifkan Midtrans',
                 'type'  => 'boolean',

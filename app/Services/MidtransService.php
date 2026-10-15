@@ -24,7 +24,8 @@ class MidtransService
 
     public function isEnabled(): bool
     {
-        return !empty($this->serverKey)
+        return (bool) config('services.midtrans.enabled', false)
+            && !empty($this->serverKey)
             && !empty($this->clientKey)
             && \App\Models\Setting::get('midtrans_enabled', true);
     }

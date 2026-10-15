@@ -86,15 +86,7 @@
             <h6 class="admin-card-title"><i class="bi bi-credit-card me-2"></i>Pembayaran</h6>
           </div>
           <div class="row g-3 p-3">
-            <div class="col-12">
-              <div class="admin-toggle-group">
-                <label class="admin-toggle">
-                  <input type="checkbox" id="midtrans_enabled" name="midtrans_enabled" />
-                  <span class="admin-toggle-slider"></span>
-                </label>
-                <span class="admin-toggle-label">Aktifkan Midtrans (Online Payment)</span>
-              </div>
-            </div>
+            <div class="col-12"><p class="text-muted mb-0">Checkout saat ini menerima Transfer Bank dan COD. Midtrans dinonaktifkan.</p></div>
             <div class="col-12">
               <div class="admin-toggle-group">
                 <label class="admin-toggle">
@@ -211,7 +203,7 @@ const FIELDS_TEXT = [
 ];
 const FIELDS_NUMBER = ['default_shipping_cost','low_stock_threshold'];
 const FIELDS_BOOL = [
-  'midtrans_enabled','cod_enabled','bank_transfer_enabled',
+  'cod_enabled','bank_transfer_enabled',
   'email_notification_enabled','low_stock_alert',
 ];
 

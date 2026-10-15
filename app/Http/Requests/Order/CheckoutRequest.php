@@ -13,8 +13,7 @@ class CheckoutRequest extends FormRequest
 
     public function rules(): array
     {
-        $isOffline = $this->input('order_type') === 'offline'
-            || $this->is('api/admin/cashier/*')
+        $isOffline = $this->is('api/admin/cashier/*')
             || $this->is('api/admin/orders/offline');
 
         return [
@@ -35,7 +34,7 @@ class CheckoutRequest extends FormRequest
             'shipping_cost'            => ['nullable', 'numeric', 'min:0'],
 
             // Payment
-            'payment_method'           => ['required', 'in:transfer,midtrans,cod,cash,qris'],
+            'payment_method'           => ['required', $isOffline ? 'in:transfer,midtrans,cod,cash,qris' : 'in:transfer,cod'],
             'notes'                    => ['nullable', 'string', 'max:500'],
 
             // Cart items
