@@ -811,3 +811,53 @@ a {
     height: auto;
   }
 }
+
+/* ===================================================
+   ADMIN LOGIN CARD
+   =================================================== */
+.admin-login-body {
+  background-color: #0D0E11;
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(158, 122, 54, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 10% 80%, rgba(20, 22, 28, 0.8) 0%, transparent 50%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 440px;
+  background: #15161A;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.75);
+  padding: 2.5rem 2.25rem 2.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-login-brand {
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+.admin-login-brand span {
+  color: var(--admin-gold-l);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.admin-login-sub {
+  color: #8E8C87;
+  font-size: 0.86rem;
+  text-align: center;
+  margin-top: 0.4rem;
+  margin-bottom: 1.85rem;
+}
+
