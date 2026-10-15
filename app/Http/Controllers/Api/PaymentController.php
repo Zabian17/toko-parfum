@@ -65,7 +65,7 @@ class PaymentController extends Controller
                 'snap_url'             => $this->midtrans->isProduction()
                     ? 'https://app.midtrans.com/snap/snap.js'
                     : 'https://app.sandbox.midtrans.com/snap/snap.js',
-                'midtrans_enabled'     => (bool) Setting::get('midtrans_enabled', true),
+                'midtrans_enabled'     => $this->midtrans->isEnabled(),
                 'cod_enabled'          => (bool) Setting::get('cod_enabled', true),
                 'bank_transfer_enabled'=> (bool) Setting::get('bank_transfer_enabled', true),
                 'bank_transfer_info'   => Setting::get('bank_transfer_info', ''),
