@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -35,6 +36,16 @@ class OrderController extends Controller
 
     public function checkout(CheckoutRequest $request): JsonResponse
     {
+        // Vercel's /tmp SQLite is local to a serverless instance, so orders can
+        // disappear or be invisible to admin/tracking requests on other instances.
+        if (app()->environment('production')
+            && DB::connection()->getDriverName() === 'sqlite'
+            && str_starts_with(str_replace('\\', '/', DB::connection()->getDatabaseName()), '/tmp/')) {
+            return response()->json([
+                'message' => 'Checkout sementara tidak tersedia karena database production belum persisten. Silakan hubungi admin.',
+            ], 503);
+        }
+
         $order = $this->service->checkout($request->validated());
 
         return response()->json(['data' => new OrderResource($order)], 201);
@@ -61,7 +72,12 @@ class OrderController extends Controller
 
     public function track(string $orderNumber): JsonResponse
     {
-        $order = Order::where('order_number', $orderNumber)->first();
+        $order = Order::where('order_number', trim($orderNumber))->first();
+
+        if (!$order && ctype_digit($orderNumber)) {
+            $order = Order::find($orderNumber);
+        }
+
         if (!$order) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         }
