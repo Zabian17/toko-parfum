@@ -17,8 +17,7 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-// Run schema setup only on the explicit Preview path; a Postgres advisory lock
-// prevents concurrent serverless instances from racing migrations.
+// Run schema setup only on the explicit Preview path.
 if ((getenv('VERCEL_ENV') ?: '') === 'preview'
     && (getenv('DB_CONNECTION') ?: '') === 'pgsql'
     && parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) === '/__preview/database-setup') {
@@ -26,15 +25,6 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview'
     $consoleKernel->bootstrap();
 
     $connection = Illuminate\Support\Facades\DB::connection();
-    $migrationLock = 202610150003;
-    $lock = $connection->selectOne('SELECT pg_try_advisory_lock(?) AS locked', [$migrationLock]);
-    if (!in_array($lock->locked, [true, 1, '1', 't'], true)) {
-        $connection->disconnect();
-        http_response_code(503);
-        header('Content-Type: text/plain; charset=UTF-8');
-        exit('Preview database setup is already running. Retry shortly.');
-    }
-
     $setupMessage = '';
     try {
         $schema = $connection->getSchemaBuilder();
@@ -60,7 +50,6 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview'
         http_response_code(500);
         $setupMessage = 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
     } finally {
-        $connection->select('SELECT pg_advisory_unlock(?)', [$migrationLock]);
         $connection->disconnect();
     }
 
