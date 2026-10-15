@@ -45,6 +45,9 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview' && (getenv('DB_CONNECTION') ?: ''
                 throw new RuntimeException('Preview database seeding failed.');
             }
         }
+    } catch (Throwable $error) {
+        error_log('Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage());
+        throw $error;
     } finally {
         $connection->select('SELECT pg_advisory_unlock(?)', [$migrationLock]);
     }
