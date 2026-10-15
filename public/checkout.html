@@ -50,24 +50,6 @@
 
 <!-- CHECKOUT FORM -->
 <div id="checkout-form-wrap" class="container py-4 pb-6 d-none">
-  <!-- Progress Steps -->
-  <div class="checkout-progress">
-    <div class="checkout-step completed">
-      <div class="checkout-step-circle"><i class="bi bi-check-lg"></i></div>
-      <span class="checkout-step-label">Keranjang</span>
-    </div>
-    <div class="checkout-step-line active"></div>
-    <div class="checkout-step active">
-      <div class="checkout-step-circle">2</div>
-      <span class="checkout-step-label">Checkout</span>
-    </div>
-    <div class="checkout-step-line"></div>
-    <div class="checkout-step">
-      <div class="checkout-step-circle">3</div>
-      <span class="checkout-step-label">Selesai</span>
-    </div>
-  </div>
-
   <h1 class="section-title mb-4">Checkout</h1>
 
   <form id="checkout-form" novalidate>
@@ -137,13 +119,9 @@
         <!-- Metode Pengiriman -->
         <div class="checkout-section">
           <div class="checkout-section-title"><i class="bi bi-truck me-2"></i>Metode Pengiriman</div>
-          <div id="shipping-loading" class="text-center py-3 d-none">
-            <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
-            <span style="font-size:0.88rem;color:var(--gray-600)">Memuat ongkos kirim…</span>
-          </div>
           <div id="shipping-options" class="d-none"></div>
           <p id="shipping-hint" class="section-subtitle" style="font-size:0.82rem">
-            Pilih kota tujuan terlebih dahulu untuk melihat opsi pengiriman.
+            Tarif pengiriman tetap untuk semua tujuan. Pesanan dikirim dengan layanan reguler.
           </p>
         </div>
 
@@ -283,9 +261,9 @@
 <!-- Midtrans Snap JS (conditionally used) -->
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="" id="midtrans-script"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/api.js"></script>
 <script src="js/cart.js"></script>
 <script>
@@ -297,8 +275,7 @@ let selectedCourier = null;
 let selectedCityId = null;
 let paymentMethod = 'midtrans';
 let midtransClientKey = '';
-let rajaongkirEnabled = true;
-let defaultShippingCost = 0;
+let defaultShippingCost = 20000;
 
 async function pageInit() {
   Cart._notifyBadge();
@@ -314,12 +291,16 @@ async function pageInit() {
   renderOrderSummary();
   await loadProvinces();
   await loadPaymentConfig();
-  console.log("TESTING")
-  // Initialize Select2 after provinces loaded
   if (window.jQuery && $.fn.select2) {
-    $('#field-province').select2({ placeholder: '— Pilih Provinsi —', width: '100%' });
-    $('#field-city').select2({ placeholder: '— Pilih Kota —', width: '100%' });
+    const selectOptions = {
+      width: '100%',
+      minimumResultsForSearch: 0,
+      language: { noResults: () => 'Tidak ada hasil' },
+    };
+    $('#field-province').select2({ ...selectOptions, placeholder: '— Pilih Provinsi —' });
+    $('#field-city').select2({ ...selectOptions, placeholder: '— Pilih Kota —' });
   }
+  applyFlatShipping();
   bindEvents();
 }
 
@@ -350,157 +331,57 @@ function updateTotals() {
   document.getElementById('summary-total').textContent = formatRupiah(subtotal + shippingCost);
 }
 
-/* ---- Load provinces ---- */
 async function loadProvinces() {
+  const provinceSelect = document.getElementById('field-province');
   try {
     const res = await ShippingAPI.provinces();
     const provinces = res.data.data || res.data;
-    const $select = $('#field-province');
-    $select.empty();
-    $select.append('<option value="">— Pilih Provinsi —</option>');
-    provinces.forEach(p => {
-      const opt = new Option(p.province, p.province_id, false, false);
-      $select.append(opt);
-    });
-    // refresh select2
-    if ($.fn.select2) $select.trigger('change');
-  } catch (e) {
-    console.warn('Gagal memuat provinsi:', e.message);
+    provinceSelect.innerHTML = '<option value="">— Pilih Provinsi —</option>';
+    provinces.forEach(province => provinceSelect.add(new Option(province.province, province.province_id)));
+    if (window.jQuery && $.fn.select2) $(provinceSelect).trigger('change');
+  } catch (error) {
+    provinceSelect.innerHTML = '<option value="">Gagal memuat provinsi</option>';
+    provinceSelect.disabled = true;
+    Toast.show('Daftar provinsi gagal dimuat. Coba muat ulang halaman.', 'error');
   }
 }
 
-/* ---- Load cities on province change ---- */
 async function loadCities(provinceId) {
-  const $citySelect = $('#field-city');
-  $citySelect.prop('disabled', true);
-  $citySelect.html('<option>Memuat kota…</option>');
-
+  const citySelect = document.getElementById('field-city');
+  citySelect.disabled = true;
+  citySelect.innerHTML = '<option value="">Memuat kota…</option>';
   try {
     const res = await ShippingAPI.cities(provinceId);
     const cities = res.data.data || res.data;
-    $citySelect.empty();
-    $citySelect.append('<option value="">— Pilih Kota —</option>');
-    cities.forEach(c => {
-      const text = ((c.type || '') + ' ' + (c.city_name || '')).trim();
-      const opt = new Option(text, c.city_id, false, false);
-      $(opt).attr('data-postal-code', c.postal_code || '');
-      $citySelect.append(opt);
+    citySelect.innerHTML = '<option value="">— Pilih Kota —</option>';
+    cities.forEach(city => {
+      const option = new Option(`${city.type || ''} ${city.city_name || ''}`.trim(), city.city_id);
+      option.dataset.postalCode = city.postal_code || '';
+      citySelect.add(option);
     });
-    $citySelect.prop('disabled', false);
-    if ($.fn.select2) $citySelect.trigger('change');
-  } catch (e) {
-    $citySelect.empty();
-    $citySelect.append('<option value="">Gagal memuat kota</option>');
-    $citySelect.prop('disabled', false);
-    if ($.fn.select2) $citySelect.trigger('change');
+    citySelect.disabled = false;
+    if (window.jQuery && $.fn.select2) $(citySelect).trigger('change');
+  } catch (error) {
+    citySelect.innerHTML = '<option value="">Gagal memuat kota</option>';
+    citySelect.disabled = true;
+    Toast.show('Daftar kota gagal dimuat. Pilih ulang provinsi.', 'error');
   }
 }
 
-/* ---- Load shipping costs ---- */
-async function loadShippingCosts(cityId) {
+/* ---- Apply the configured flat shipping rate ---- */
+function applyFlatShipping() {
   const optionsEl = document.getElementById('shipping-options');
-  const loadingEl = document.getElementById('shipping-loading');
   const hintEl    = document.getElementById('shipping-hint');
-
+  shippingCost = defaultShippingCost;
+  selectedCourier = 'reguler:REG';
+  optionsEl.innerHTML = `<div class="shipping-option selected" aria-label="Pengiriman reguler, ${formatRupiah(shippingCost)}">
+    <div style="flex:1"><div class="shipping-option-name">Pengiriman Reguler</div>
+    <div class="shipping-option-detail">Tarif tetap, konfirmasi nomor resi setelah pesanan dikirim.</div></div>
+    <div class="shipping-option-price">${shippingCost > 0 ? formatRupiah(shippingCost) : 'Gratis'}</div>
+  </div>`;
+  optionsEl.classList.remove('d-none');
   hintEl.classList.add('d-none');
-  optionsEl.classList.add('d-none');
-
-  // If RajaOngkir is disabled, apply default shipping cost directly
-  if (!rajaongkirEnabled) {
-    shippingCost = defaultShippingCost;
-    selectedCourier = 'default';
-    optionsEl.innerHTML = `<div class="shipping-option selected" style="pointer-events:none">
-      <input type="radio" name="shipping" value="default" checked />
-      <div style="flex:1"><div class="shipping-option-name">Ongkos Kirim</div></div>
-      <div class="shipping-option-price">${defaultShippingCost > 0 ? formatRupiah(defaultShippingCost) : 'Gratis'}</div>
-    </div>`;
-    optionsEl.classList.remove('d-none');
-    updateTotals();
-    return;
-  }
-
-  loadingEl.classList.remove('d-none');
-
-  const totalWeight = Cart.all().reduce((sum, i) => sum + (i.weight || 50) * i.qty, 0) || 1000;
-
-  try {
-    const res = await ShippingAPI.cost({
-      destination: cityId,
-      weight: totalWeight,
-      courier: 'jne:pos:tiki',
-    });
-
-    const results = res.data.data || res.data;
-    optionsEl.innerHTML = '';
-
-    if (!results || results.length === 0) {
-      optionsEl.innerHTML = '<p class="section-subtitle">Pengiriman tidak tersedia ke kota ini.</p>';
-    } else {
-      results.forEach(courierData => {
-        (courierData.costs || [courierData]).forEach(sv => {
-          const cost = sv.cost ?? sv.value ?? 0;
-          const etd  = sv.cost?.[0]?.etd  ?? sv.etd  ?? '';
-          const el = document.createElement('div');
-          el.className = 'shipping-option';
-          el.dataset.cost = cost;
-          el.dataset.courier = `${courierData.code || ''}:${sv.service || ''}`;
-          el.innerHTML = `
-            <input type="radio" name="shipping" value="${escHtml(el.dataset.courier)}" />
-            <div style="flex:1">
-              <div class="shipping-option-name">${escHtml(courierData.name || courierData.code || '')} — ${escHtml(sv.service || sv.description || '')}</div>
-              <div class="shipping-option-detail">Estimasi ${escHtml(etd || '—')} hari kerja</div>
-            </div>
-            <div class="shipping-option-price">${formatRupiah(cost)}</div>
-          `;
-          optionsEl.appendChild(el);
-        });
-      });
-    }
-
-    loadingEl.classList.add('d-none');
-    optionsEl.classList.remove('d-none');
-
-    // Bind shipping selection
-    optionsEl.querySelectorAll('.shipping-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        optionsEl.querySelectorAll('.shipping-option').forEach(o => {
-          o.classList.remove('selected');
-          o.querySelector('input').checked = false;
-        });
-        opt.classList.add('selected');
-        opt.querySelector('input').checked = true;
-        shippingCost = parseInt(opt.dataset.cost) || 0;
-        selectedCourier = opt.dataset.courier;
-        updateTotals();
-      });
-    });
-
-    // Auto-select cheapest
-    const first = optionsEl.querySelector('.shipping-option');
-    if (first) first.click();
-
-  } catch (e) {
-    console.warn("RajaOngkir cost fetch failed, using fallback:", e);
-    loadingEl.classList.add('d-none');
-    const fallbackCost = defaultShippingCost > 0 ? defaultShippingCost : 20000;
-    optionsEl.innerHTML = `
-      <div class="shipping-option selected" data-cost="${fallbackCost}" data-courier="reguler:REG">
-        <input type="radio" name="shipping" value="reguler:REG" checked />
-        <div style="flex:1">
-          <div class="shipping-option-name">Pengiriman Reguler (Tarif Standar)</div>
-          <div class="shipping-option-detail">Estimasi 2–4 hari kerja (otomatis tarif standar)</div>
-        </div>
-        <div class="shipping-option-price">${formatRupiah(fallbackCost)}</div>
-      </div>
-      <div class="mt-2 text-muted" style="font-size:0.75rem">
-        <i class="bi bi-info-circle me-1"></i>Tarif standar otomatis diterapkan agar pesanan tetap dapat dilanjutkan.
-      </div>
-    `;
-    optionsEl.classList.remove('d-none');
-    shippingCost = fallbackCost;
-    selectedCourier = 'reguler:REG';
-    updateTotals();
-  }
+  updateTotals();
 }
 
 /* ---- Load payment config (Midtrans key + bank info + enabled flags) ---- */
@@ -518,8 +399,7 @@ async function loadPaymentConfig() {
     }
 
     // Store shipping config globally
-    rajaongkirEnabled   = cfg.rajaongkir_enabled !== false;
-    defaultShippingCost = parseInt(cfg.default_shipping_cost) || 0;
+    defaultShippingCost = Math.max(0, parseInt(cfg.default_shipping_cost, 10) || 0);
 
     // Show/hide payment options based on settings
     const midtransOpt = document.querySelector('.payment-option[data-method="midtrans"]');
@@ -557,22 +437,20 @@ async function loadPaymentConfig() {
 
 /* ---- Bind events ---- */
 function bindEvents() {
-  // Province change → load cities + reset shipping (works with native change and select2)
   $('#field-province').on('change', async function () {
-    const provinceId = $(this).val();
-    if (!provinceId) return;
-    resetShipping();
-    await loadCities(provinceId);
+    selectedCityId = null;
+    document.getElementById('field-postal').value = '';
+    const citySelect = document.getElementById('field-city');
+    citySelect.innerHTML = '<option value="">— Pilih Kota —</option>';
+    citySelect.disabled = !this.value;
+    if (window.jQuery && $.fn.select2) $(citySelect).val('').trigger('change');
+    if (this.value) await loadCities(this.value);
   });
 
-  // City change → load shipping costs
-  $('#field-city').on('change', async function () {
-    const $opt = $(this).find(':selected');
-    selectedCityId = $(this).val();
-    if (!selectedCityId) return;
-    const postal = $opt.data('postal-code') || $opt.attr('data-postal-code');
-    if (postal) document.getElementById('field-postal').value = postal;
-    await loadShippingCosts(selectedCityId);
+  $('#field-city').on('change', function () {
+    selectedCityId = this.value || null;
+    const postalCode = this.options[this.selectedIndex]?.dataset.postalCode;
+    if (postalCode) document.getElementById('field-postal').value = postalCode;
   });
 
   // Payment method
@@ -593,23 +471,11 @@ function bindEvents() {
   document.getElementById('checkout-form').addEventListener('submit', handleCheckout);
 }
 
-function resetShipping() {
-  shippingCost = 0;
-  selectedCourier = null;
-  document.getElementById('shipping-options').classList.add('d-none');
-  document.getElementById('shipping-hint').classList.remove('d-none');
-  updateTotals();
-}
-
 /* ---- Handle checkout ---- */
 async function handleCheckout(e) {
   e.preventDefault();
 
   if (!validateForm()) return;
-  if (!selectedCourier && shippingCost === 0 && paymentMethod !== 'cod') {
-    // Allow if no shipping options loaded (might be free / RajaOngkir disabled)
-  }
-
   setSubmitting(true);
 
   const cartItems = Cart.toOrderItems();
@@ -620,13 +486,13 @@ async function handleCheckout(e) {
     customer_email:    document.getElementById('field-email').value.trim(),
     customer_phone:    document.getElementById('field-phone').value.trim(),
     shipping_address:  document.getElementById('field-address').value.trim(),
-    shipping_province:  document.getElementById('field-province').options[document.getElementById('field-province').selectedIndex]?.text || '',
-    shipping_city:     document.getElementById('field-city').options[document.getElementById('field-city').selectedIndex]?.text || '',
+    shipping_province: document.getElementById('field-province').selectedOptions[0]?.text || '',
+    shipping_city:     document.getElementById('field-city').selectedOptions[0]?.text || '',
     shipping_postal_code:   document.getElementById('field-postal').value.trim(),
     shipping_city_id:       selectedCityId || '',
     rajaongkir_city_id:     selectedCityId || '',
     rajaongkir_province_id: document.getElementById('field-province').value || '',
-    shipping_courier:       courierParts[0] || 'jne',
+    shipping_courier:       courierParts[0] || 'reguler',
     shipping_service:       courierParts[1] || 'REG',
     shipping_cost:          shippingCost,
     notes:                  document.getElementById('field-notes').value.trim(),
@@ -673,7 +539,7 @@ function handleOrderSuccess(order, info) {
 /* ---- Form validation ---- */
 function validateForm() {
   let valid = true;
-  const required = ['field-name', 'field-email', 'field-phone', 'field-address', 'field-province', 'field-city'];
+  const required = ['field-name', 'field-email', 'field-phone', 'field-address', 'field-province', 'field-city', 'field-postal'];
 
   required.forEach(id => {
     const el = document.getElementById(id);

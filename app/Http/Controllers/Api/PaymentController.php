@@ -69,8 +69,7 @@ class PaymentController extends Controller
                 'cod_enabled'          => (bool) Setting::get('cod_enabled', true),
                 'bank_transfer_enabled'=> (bool) Setting::get('bank_transfer_enabled', true),
                 'bank_transfer_info'   => Setting::get('bank_transfer_info', ''),
-                'rajaongkir_enabled'   => (bool) Setting::get('rajaongkir_enabled', true),
-                'default_shipping_cost'=> (int) Setting::get('default_shipping_cost', 0),
+                'default_shipping_cost'=> (int) Setting::get('default_shipping_cost', 20000),
             ],
         ]);
     }

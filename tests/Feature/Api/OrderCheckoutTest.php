@@ -89,6 +89,55 @@ class OrderCheckoutTest extends TestCase
         ]);
     }
 
+    public function test_customer_cod_order_can_be_confirmed_shipped_and_paid_on_delivery(): void
+    {
+        [$product, $variant] = $this->setupProductWithTier(stock: 10);
+
+        $checkout = $this->postJson('/api/checkout', [
+            'customer_name'        => 'Test Customer',
+            'customer_email'       => 'customer@example.test',
+            'customer_phone'       => '08000000001',
+            'shipping_address'     => 'Alamat Uji 1',
+            'shipping_city'        => 'Jakarta Selatan',
+            'shipping_province'    => 'DKI Jakarta',
+            'shipping_postal_code' => '12340',
+            'shipping_cost'        => 15000,
+            'payment_method'       => 'cod',
+            'items'                => [[
+                'product_id'         => $product->id,
+                'product_variant_id' => $variant->id,
+                'quantity'           => 1,
+            ]],
+        ]);
+
+        $checkout->assertCreated()
+                 ->assertJsonPath('data.status', 'pending')
+                 ->assertJsonPath('data.payment_status', 'unpaid')
+                 ->assertJsonPath('data.total_amount', 50000);
+
+        $orderId = $checkout->json('data.id');
+        $this->assertEquals(9, $variant->fresh()->stock);
+
+        \Laravel\Sanctum\Sanctum::actingAs(\App\Models\User::factory()->create());
+
+        $this->patchJson("/api/admin/orders/{$orderId}/status", ['status' => 'confirmed'])
+             ->assertOk()
+             ->assertJsonPath('data.status', 'confirmed')
+             ->assertJsonPath('data.payment_status', 'unpaid');
+
+        $this->patchJson("/api/admin/orders/{$orderId}/status", [
+            'status'          => 'shipped',
+            'tracking_number' => 'TRACK-TEST-001',
+        ])->assertOk()
+          ->assertJsonPath('data.status', 'shipped')
+          ->assertJsonPath('data.payment_status', 'unpaid');
+
+        $this->patchJson("/api/admin/orders/{$orderId}/status", ['status' => 'delivered'])
+             ->assertOk()
+             ->assertJsonPath('data.status', 'delivered')
+             ->assertJsonPath('data.payment_status', 'paid');
+    }
+
     public function test_checkout_fails_when_stock_insufficient(): void
     {
         [$product, $variant] = $this->setupProductWithTier(stock: 1);

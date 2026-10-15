@@ -42,6 +42,7 @@
         </select>
         <input type="date" id="filter-date-from" class="admin-form-control" style="width:auto" title="Dari tanggal" />
         <input type="date" id="filter-date-to"   class="admin-form-control" style="width:auto" title="Sampai tanggal" />
+        <button type="button" id="refresh-orders" class="btn-admin-outline"><i class="bi bi-arrow-clockwise me-1"></i>Perbarui</button>
       </div>
 
       <div class="admin-card">
@@ -99,6 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
   AdminAuth.buildLayout('Kelola Pesanan', 'orders');
   initTable();
   bindEvents();
+  window.setInterval(() => {
+    if (!document.hidden) table.setData();
+  }, 30000);
 });
 
 function initTable() {
@@ -231,6 +235,7 @@ function bindEvents() {
   document.getElementById('filter-payment').addEventListener('change', () => table.setData());
   document.getElementById('filter-date-from').addEventListener('change', () => table.setData());
   document.getElementById('filter-date-to').addEventListener('change', () => table.setData());
+  document.getElementById('refresh-orders').addEventListener('click', () => table.setData());
   document.getElementById('btn-update-status').addEventListener('click', updateOrderStatus);
   document.getElementById('status-select').addEventListener('change', (e) => {
     const hint = document.getElementById('auto-paid-hint');
@@ -283,7 +288,9 @@ function renderOrderDetail(o) {
           <tr><td style="color:#888;padding:0.25rem 0">Email</td><td>${escA(o.customer_email || '—')}</td></tr>
           <tr><td style="color:#888;padding:0.25rem 0">Telepon</td><td>${escA(o.customer_phone || '—')}</td></tr>
           <tr><td style="color:#888;padding:0.25rem 0;vertical-align:top">Alamat</td><td style="font-size:0.82rem">${escA(o.shipping_address || '—')}</td></tr>
-          <tr><td style="color:#888;padding:0.25rem 0">Kurir</td><td style="text-transform:uppercase">${escA(o.shipping_courier || '—')} ${escA(o.shipping_service || '')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Pengiriman</td><td>${o.shipping_courier === 'reguler' ? 'Pengiriman Reguler' : `${escA(o.shipping_courier || '—')} ${escA(o.shipping_service || '')}`}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Kota / Provinsi</td><td>${escA([o.shipping_city, o.shipping_province].filter(Boolean).join(', ') || '—')}</td></tr>
+          <tr><td style="color:#888;padding:0.25rem 0">Kode Pos</td><td>${escA(o.shipping_postal_code || '—')}</td></tr>
         </table>
       </div>
     </div>
@@ -296,9 +303,9 @@ function renderOrderDetail(o) {
           <tr>
             <td style="font-size:0.83rem">${escA(i.product_name || i.product?.name || '—')}</td>
             <td style="font-size:0.8rem;color:#888">${escA(i.variant_name || i.variant?.name || '—')}</td>
-            <td style="font-size:0.83rem">${fmtRp(i.price)}</td>
+            <td style="font-size:0.83rem">${fmtRp(i.unit_price ?? i.price ?? 0)}</td>
             <td style="font-size:0.83rem">${i.quantity || i.qty}</td>
-            <td style="font-size:0.83rem;font-weight:600">${fmtRp(i.subtotal || (i.price * (i.quantity || i.qty)))}</td>
+            <td style="font-size:0.83rem;font-weight:600">${fmtRp(i.subtotal ?? ((i.unit_price ?? i.price ?? 0) * (i.quantity ?? i.qty ?? 0)))}</td>
           </tr>
         `).join('')}
       </tbody>

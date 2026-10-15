@@ -93,7 +93,10 @@
           <div class="admin-card">
             <div class="admin-card-header">
               <p class="admin-card-title">Pesanan Terbaru</p>
-              <a href="orders" class="btn-admin-outline" style="font-size:0.78rem;padding:0.3rem 0.8rem">Lihat Semua</a>
+              <div class="d-flex gap-2">
+                <button type="button" id="refresh-dashboard" class="btn-admin-outline" style="font-size:0.78rem;padding:0.3rem 0.8rem"><i class="bi bi-arrow-clockwise me-1"></i>Perbarui</button>
+                <a href="orders" class="btn-admin-outline" style="font-size:0.78rem;padding:0.3rem 0.8rem">Lihat Semua</a>
+              </div>
             </div>
             <div id="recent-orders-wrap">
               <div class="admin-loading"><span class="spinner-border spinner-border-sm me-2"></span>Memuat…</div>
@@ -135,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
     titleEl.textContent = 'Penjualan ' + months[now.getMonth()] + ' ' + now.getFullYear();
   }
   loadDashboard();
+  document.getElementById('refresh-dashboard').addEventListener('click', loadDashboard);
+  window.setInterval(() => {
+    if (!document.hidden) loadDashboard();
+  }, 30000);
 });
 
 async function loadDashboard() {

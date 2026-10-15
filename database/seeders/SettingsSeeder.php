@@ -55,6 +55,13 @@ class SettingsSeeder extends Seeder
                 'type'  => 'boolean',
             ],
             [
+                'key'   => 'default_shipping_cost',
+                'value' => '20000',
+                'group' => 'shipping',
+                'label' => 'Tarif Pengiriman Tetap',
+                'type'  => 'integer',
+            ],
+            [
                 'key'   => 'default_couriers',
                 'value' => 'jne,jnt,pos',
                 'group' => 'shipping',
