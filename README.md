@@ -523,7 +523,7 @@ Relasi penting:
 	- schema database
 - `database/seeders`
 	- seed data role/settings/category/tier/product/transaksi
-- `dummy-data.json`
+- `database/data/dummy-data.json`
 	- source data nama parfum untuk `ProductSeeder`
 
 ## 10.4 Frontend
@@ -545,10 +545,12 @@ Relasi penting:
 - `public/admin/css/admin.css`
 	- tema admin
 
-## 10.5 Figma
+## 10.5 Dokumentasi & Desain
 
-- `figma/tokens.json`
+- `docs/figma/tokens.json`
 	- design tokens untuk referensi style/design
+- `docs/DESIGN.md`
+	- pedoman desain dan spesifikasi tema visual
 
 ---
 

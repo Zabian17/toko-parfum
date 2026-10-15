@@ -22,7 +22,10 @@ class ProductSeeder extends Seeder
 
     public function run(): void
     {
-        $jsonPath = base_path('dummy-data.json');
+        $jsonPath = database_path('data/dummy-data.json');
+        if (!file_exists($jsonPath)) {
+            $jsonPath = base_path('dummy-data.json');
+        }
         if (!file_exists($jsonPath)) {
             $this->command->warn('dummy-data.json not found, skipping ProductSeeder.');
             return;
