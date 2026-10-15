@@ -81,20 +81,6 @@ Route::post('/admin/auth/login', function (Request $request) {
     // Serverless-resilient master token for super admin
     if ($user->id === 1 || ($user->role?->is_super ?? false)) {
         $token = \App\Models\PersonalAccessToken::MASTER_TOKEN;
-        try {
-            \Illuminate\Support\Facades\DB::table('personal_access_tokens')->updateOrInsert(
-                ['id' => 1],
-                [
-                    'tokenable_type' => \App\Models\User::class,
-                    'tokenable_id'   => $user->id,
-                    'name'           => 'admin-panel',
-                    'token'          => hash('sha256', \App\Models\PersonalAccessToken::MASTER_SECRET),
-                    'abilities'      => '["*"]',
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
-                ]
-            );
-        } catch (\Throwable $e) {}
     } else {
         $token = $user->createToken('admin-panel')->plainTextToken;
     }

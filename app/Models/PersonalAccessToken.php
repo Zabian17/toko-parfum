@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
@@ -24,30 +23,18 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         if ($token === self::MASTER_TOKEN) {
             $user = User::find(1) ?? User::where('email', 'admin@albiparfum.com')->first();
             if ($user) {
-                // Self-heal this container's DB table if missing
-                try {
-                    DB::table('personal_access_tokens')->updateOrInsert(
-                        ['id' => 1],
-                        [
-                            'tokenable_type' => User::class,
-                            'tokenable_id'   => $user->id,
-                            'name'           => 'admin-panel',
-                            'token'          => hash('sha256', self::MASTER_SECRET),
-                            'abilities'      => '["*"]',
-                            'created_at'     => now(),
-                            'updated_at'     => now(),
-                        ]
-                    );
-                } catch (\Throwable $e) {}
-
+                // Build the master token in memory; serverless instances cannot rely on token-table writes.
                 $instance = new static();
-                $instance->id = 1;
-                $instance->tokenable_type = User::class;
-                $instance->tokenable_id = $user->id;
-                $instance->name = 'admin-panel';
-                $instance->abilities = ['*'];
-                $instance->created_at = now();
-                $instance->updated_at = now();
+                $instance->forceFill([
+                    'id'             => 1,
+                    'tokenable_type' => User::class,
+                    'tokenable_id'   => $user->id,
+                    'name'           => 'admin-panel',
+                    'token'          => hash('sha256', self::MASTER_SECRET),
+                    'abilities'      => ['*'],
+                ]);
+                $instance->exists = true;
+
                 $instance->setRelation('tokenable', $user);
                 return $instance;
             }

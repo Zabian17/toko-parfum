@@ -81,6 +81,7 @@
             </div>
             <div style="padding:1rem 1.25rem;height:240px">
               <canvas id="sales-chart"></canvas>
+              <p id="sales-chart-fallback" class="admin-empty" role="status" hidden></p>
             </div>
           </div>
         </div>
@@ -139,14 +140,22 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadDashboard() {
   try {
     const res = await adminApi.get('/dashboard');
-    const d = res.data.data || res.data;
-    renderStats(d.summary);
+    const d = res.data?.data || res.data || {};
+    renderStats(d.summary || {});
     renderOrderBreakdown(d.order_status_breakdown || {});
-    renderSalesChart(d.sales_chart || []);
     renderRecentOrders(d.recent_orders || []);
     renderLowStock(d.low_stock_items || []);
+    renderSalesChart(d.sales_chart || []);
   } catch (e) {
-    showAlert('Gagal memuat data dashboard.', 'error');
+    const status = e.response?.status;
+    const message = status === 500
+      ? 'Server gagal memproses data dashboard. Periksa log function Vercel.'
+      : status === 404
+        ? 'Endpoint dashboard tidak ditemukan. Periksa konfigurasi route API Vercel.'
+        : status
+          ? `Data dashboard gagal dimuat (HTTP ${status}). Coba muat ulang halaman.`
+          : 'API dashboard tidak dapat dijangkau. Periksa deployment Vercel dan koneksi, lalu muat ulang.';
+    showAlert(message, 'error');
   }
 }
 
@@ -156,7 +165,7 @@ function renderStats(d) {
   document.getElementById('stat-total-sales').textContent  = totalQty.toLocaleString('id-ID');
   document.getElementById('stat-today-sales').textContent  = todayQty.toLocaleString('id-ID');
   document.getElementById('stat-pending').textContent      = d.pending_orders ?? 0;
-  document.getElementById('stat-low-stock').textContent    = d.low_stock_products ?? (d.low_stock_products ?? 0);
+  document.getElementById('stat-low-stock').textContent    = d.low_stock_products ?? 0;
 }
 
 function renderOrderBreakdown(breakdown) {
@@ -181,10 +190,19 @@ function renderOrderBreakdown(breakdown) {
 }
 
 function renderSalesChart(chartData) {
+  const canvas = document.getElementById('sales-chart');
+  const fallback = document.getElementById('sales-chart-fallback');
+  if (typeof Chart === 'undefined') {
+    canvas.hidden = true;
+    fallback.hidden = false;
+    fallback.textContent = 'Grafik gagal dimuat dari CDN. Muat ulang halaman untuk mencoba kembali.';
+    return;
+  }
+
   const labels = chartData.map(d => d.date || d.label);
   const values = chartData.map(d => Number(d.total) || 0);
 
-  const ctx = document.getElementById('sales-chart').getContext('2d');
+  const ctx = canvas.getContext('2d');
   new Chart(ctx, {
     type: 'bar',
     data: {
