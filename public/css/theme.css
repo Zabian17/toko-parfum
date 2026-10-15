@@ -70,7 +70,7 @@ body {
   font-size: 15px;
   line-height: 1.65;
   letter-spacing: -0.01em;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 a {
@@ -731,6 +731,12 @@ img {
   box-shadow: var(--shadow-sm);
 }
 
+.checkout-summary-sticky {
+  position: sticky;
+  top: 1.5rem;
+  align-self: flex-start;
+}
+
 .cart-summary-row {
   display: flex;
   justify-content: space-between;
@@ -1008,4 +1014,8 @@ img {
   .hero-title { font-size: 2.1rem; }
   .section-title { font-size: 1.55rem; }
   .cart-summary-box { margin-top: 1.5rem; }
+}
+
+@media (max-width: 991.98px) {
+  .checkout-summary-sticky { position: static; }
 }

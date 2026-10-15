@@ -36,13 +36,21 @@ class OrderController extends Controller
 
     public function checkout(CheckoutRequest $request): JsonResponse
     {
-        // Vercel's /tmp SQLite is local to a serverless instance, so orders can
-        // disappear or be invisible to admin/tracking requests on other instances.
-        if (app()->environment('production')
+        $vercelEnvironment = getenv('VERCEL_ENV') ?: '';
+
+        if ($vercelEnvironment === 'production') {
+            return response()->json([
+                'message' => 'Checkout production sedang dinonaktifkan. Silakan gunakan versi Preview untuk pengujian.',
+            ], 503);
+        }
+
+        // A Vercel Preview backed by /tmp SQLite cannot preserve orders between
+        // serverless instances. Keep local checkout available for development.
+        if ($vercelEnvironment === 'preview'
             && DB::connection()->getDriverName() === 'sqlite'
             && str_starts_with(str_replace('\\', '/', DB::connection()->getDatabaseName()), '/tmp/')) {
             return response()->json([
-                'message' => 'Checkout sementara tidak tersedia karena database production belum persisten. Silakan hubungi admin.',
+                'message' => 'Checkout Preview belum tersedia karena database uji belum persisten.',
             ], 503);
         }
 
