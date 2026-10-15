@@ -48,7 +48,8 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview'
         $setupMessage = 'Preview database schema and demo data are ready.';
     } catch (Throwable $error) {
         http_response_code(500);
-        $setupMessage = 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
+        Illuminate\Support\Facades\Log::error('Preview database bootstrap failed.', ['exception' => $error]);
+        $setupMessage = 'Preview database setup failed. Check Preview runtime logs.';
     } finally {
         $connection->disconnect();
     }

@@ -108,7 +108,7 @@ const PaymentAPI = {
 
 /* ---- Checkout ---- */
 const CheckoutAPI = {
-  place: (payload) => api.post('/checkout', payload),
+  place: (payload) => api.post('/checkout', payload, { timeout: 45000 }),
 };
 
 /* ---- Auth (Breeze) ---- */
