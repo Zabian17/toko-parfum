@@ -1,1 +1,4 @@
-*.sqlite*
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+!database.sqlite

@@ -28,8 +28,8 @@ $_ENV['LARAVEL_STORAGE_PATH'] = $tmpStorage;
 $_SERVER['LARAVEL_STORAGE_PATH'] = $tmpStorage;
 
 putenv("VIEW_COMPILED_PATH={$tmpStorage}/framework/views");
-putenv('/tmp/bootstrap/cache/services.php');
 putenv('APP_SERVICES_CACHE=/tmp/bootstrap/cache/services.php');
+
 putenv('APP_PACKAGES_CACHE=/tmp/bootstrap/cache/packages.php');
 putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
 putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
@@ -56,11 +56,11 @@ if (!$dbConn || $dbConn === 'sqlite') {
     $sourceDb = __DIR__ . '/../database/database.sqlite';
 
     if (file_exists($sourceDb)) {
-        // Copy if target doesn't exist or is empty
-        if (!file_exists($targetDb) || filesize($targetDb) === 0) {
+        if (!file_exists($targetDb) || filesize($targetDb) < filesize($sourceDb)) {
             @copy($sourceDb, $targetDb);
             @chmod($targetDb, 0666);
         }
+
     } elseif (!file_exists($targetDb)) {
         @touch($targetDb);
         @chmod($targetDb, 0666);
