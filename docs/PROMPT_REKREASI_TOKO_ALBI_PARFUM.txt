@@ -1,0 +1,71 @@
+PROMPT MASTER REKREASI PROJECT TOKO ALBI PARFUM
+
+PERAN
+Bertindak sebagai product designer, UI/UX designer, full-stack Laravel engineer, dan QA engineer. Bangun ulang aplikasi e-commerce parfum beserta panel admin dan POS berdasarkan spesifikasi ini. Hasil akhir harus berfungsi end-to-end, konsisten, responsif, aman, dan mudah dijalankan.
+
+TUJUAN PRODUK
+Buat aplikasi toko parfum bernama Toko Albi Parfum. Pelanggan dapat menemukan parfum, memilih ukuran/varian dan harga, membeli sebagai tamu, memilih pengiriman dan pembayaran, lalu melacak pesanan. Admin dapat mengelola katalog, kategori, stok, pesanan, pelanggan, laporan, pengaturan, peran, dan pengguna. Kasir dapat mencatat transaksi langsung di toko.
+
+TAHAP 1 — PAHAMI DAN RENCANAKAN
+Sebelum coding, periksa seluruh repo, instruksi AGENTS.md, teknologi dan aset yang tersedia. Buat ringkasan arsitektur, alur pengguna, model data, endpoint, halaman, dependensi, serta risiko integrasi. Gunakan implementasi yang sudah ada sebagai sumber perilaku dan detail; hindari mengganti teknologi tanpa alasan. Identifikasi kebutuhan yang belum jelas, lalu pilih asumsi paling sederhana dan catat.
+
+TAHAP 2 — SPESIFIKASI FUNGSIONAL
+Bangun fitur berikut:
+
+A. Toko publik
+- Beranda dengan identitas merek, hero, keunggulan, kategori, produk unggulan, dan tautan informasi.
+- Katalog dengan pencarian, filter kategori/tag/atribut, pengurutan, paginasi, serta kondisi loading, kosong, dan gagal.
+- Detail produk melalui slug: deskripsi, foto, kategori, tag, pilihan tier/ukuran, harga, stok, dan tambah ke keranjang.
+- Keranjang tersimpan di localStorage: ubah kuantitas, hapus item, hitung subtotal, badge jumlah item, dan validasi stok.
+- Checkout tamu: data penerima, alamat, provinsi/kota, kurir/layanan, ongkir, catatan, metode pembayaran, ringkasan, dan konfirmasi.
+- Lacak pesanan menggunakan nomor order; tampilkan status dan ringkasan yang aman.
+- Halaman cara pemesanan, pengiriman, dan kebijakan retur.
+
+B. Admin dan kasir
+- Login dan logout admin memakai token Sanctum; lindungi seluruh halaman dan endpoint admin.
+- Dashboard metrik penjualan/pesanan/stok dan grafik.
+- CRUD produk dengan gambar utama dan galeri, kategori, tag, varian/tier, ukuran, harga, serta stok.
+- CRUD kategori, tier produk, pelanggan, role, dan pengguna admin.
+- Daftar/detail pesanan, pencarian/filter, status, metode pembayaran, bukti bayar jika tersedia, dan pemrosesan pesanan offline.
+- Stok: tingkat stok, penyesuaian masuk/keluar, alasan, dan riwayat pergerakan.
+- Laporan penjualan, produk terlaris, dan stok.
+- Pengaturan toko, pembayaran, pengiriman, notifikasi; uji email bila tersedia.
+- POS: cari produk, pilih tier/ukuran, atur jumlah, hitung total, pilih metode pembayaran, simpan transaksi dan kurangi stok.
+- Menu/aksi tampil sesuai peran dan izin.
+
+C. Backend dan integrasi
+- Laravel API dengan validasi, otorisasi, respons konsisten, pagination, dan penanganan error.
+- Entitas minimum: User, Role, Category, Product, ProductImage, ProductTag, ProductVariant/ProductTier, Customer, Order, OrderItem, StockMovement, Setting. Pertahankan snapshot nama/varian/harga saat transaksi.
+- Buat nomor order unik dengan pola ORD-YYYYMMDD-XXXXX.
+- Buat order dan item dalam transaksi database; cek lalu kurangi stok secara atomik. Catat mutasi stok. Tolak stok tidak cukup dan cegah order ganda akibat retry.
+- Status order dan pembayaran harus tervalidasi dan memiliki transisi yang masuk akal.
+- Integrasikan RajaOngkir untuk provinsi, kota, dan tarif; sediakan fallback/mock lokal untuk development jika kunci tidak ada.
+- Integrasikan Midtrans Snap untuk pembuatan token dan webhook. Verifikasi notifikasi di server, idempotent, dan jangan percaya status pembayaran dari browser.
+- Kirim email order dibuat dan perubahan status melalui queue; aplikasi tetap dapat berjalan lokal tanpa SMTP nyata.
+- Simpan gambar secara aman, validasi tipe/ukuran, dan gunakan URL fallback bila gambar tidak tersedia.
+
+TAHAP 3 — RANCANG UI/UX
+Arah visual: modern quiet luxury/editorial untuk parfum premium. Kanvas krem hangat (#FAF9F6), putih, tinta gelap (#141414), aksen antique gold (#9E7A36), ruang lega, garis batas lembut, tipografi sans Inter dan serif Playfair Display/Cormorant Garamond. Gunakan foto produk yang konsisten dan crop rapi. Admin menggunakan sidebar gelap, aksen gold, konten terang, tabel padat namun mudah dipindai.
+
+Rancang alur sebelum implementasi: beranda → katalog → detail → keranjang → checkout → pembayaran/konfirmasi → lacak. Admin: login → dashboard → modul pengelolaan. Setiap layar harus memiliki hierarki jelas, CTA utama, navigasi konsisten, label Bahasa Indonesia, feedback aksi, empty/loading/error state, konfirmasi aksi destruktif, dan validasi dekat dengan input. Pastikan responsif untuk ponsel, tablet, desktop; keyboard-accessible, fokus terlihat, kontras memadai, label form semantik, tombol memiliki ukuran sentuh yang nyaman. Jangan mengandalkan warna saja untuk menyampaikan status. Hindari placeholder kosong, tautan mati, kontrol dekoratif yang tidak berfungsi, dan modal berlebihan.
+
+TAHAP 4 — HASILKAN KODE
+Ikuti pola dan dependensi repo. Implementasikan per lapisan: skema/migrasi dan seed, model/relasi, service/controller/API, autentikasi/otorisasi, halaman publik, admin, POS, lalu integrasi. Buat komponen/helper hanya saat dipakai berulang. Pisahkan logika bisnis dari tampilan. Gunakan transaksi DB untuk operasi multi-tabel dan validasi di server. Jangan menyimpan rahasia di source code. Sediakan .env.example, data demo, akun demo yang jelas untuk development, serta README instalasi dan konfigurasi.
+
+TAHAP 5 — DEBUGGING DAN VERIFIKASI
+Jalankan migrasi/seed pada database bersih. Verifikasi alur utama dari browser serta request API: katalog dan filter, varian, cart, checkout, kalkulasi ongkir, pembayaran sandbox/mock, webhook, pelacakan, login admin, CRUD, perubahan stok, laporan, role/permission, dan POS. Periksa responsif dan aksesibilitas dasar. Periksa log Laravel dan konsol browser. Perbaiki akar masalah, bukan hanya gejalanya. Pastikan kegagalan layanan eksternal memberi pesan yang jelas dan tidak merusak order/stok. Jangan mengklaim berhasil bila alur belum dijalankan; catat verifikasi yang benar-benar dilakukan.
+
+TAHAP 6 — REFINEMENT
+Setelah fitur berfungsi, tinjau konsistensi visual ant halaman, tipografi, jarak, alignment, responsif, format Rupiah, tanggal, bahasa, notifikasi, dan state. Hapus kode duplikat yang nyata, perbaiki validasi dan edge case, cek keamanan input/upload/token/webhook, dan pastikan tidak ada data sensitif di frontend. Pertahankan scope; jangan menambah fitur yang tidak diminta. Akhiri dengan ringkasan fitur, cara menjalankan, variabel konfigurasi eksternal, akun demo, serta keterbatasan yang masih ada.
+
+KRITERIA SELESAI
+- Pelanggan dapat menyelesaikan alur beli dan melihat pesanan tanpa membuat akun.
+- Harga/varian/stok dihitung server-side; stok tidak menjadi negatif dan perubahan tercatat.
+- Admin terautentikasi dapat menjalankan modul sesuai izin.
+- POS membuat transaksi dan memperbarui stok.
+- UI selaras dengan identitas premium, berfungsi di layar kecil dan besar, serta mempunyai state loading/kosong/error.
+- Setup dari README dapat diikuti pada instalasi baru; konfigurasi layanan eksternal dijelaskan.
+- Semua klaim fitur dan verifikasi sesuai hasil implementasi yang nyata.
+
+BATASAN PENTING
+Jangan mengarang detail bisnis yang tidak tersedia. Gunakan data seed/demo dan tandai sebagai contoh. Jangan menganggap pembayaran berhasil hanya karena redirect sukses. Jangan mengurangi stok dua kali. Jangan mengekspos token, kredensial, atau data pelanggan. Bila spesifikasi bertentangan dengan repo atau integrasi nyata, jelaskan konflik dan pilih solusi paling aman yang mempertahankan alur produk.

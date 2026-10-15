@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ProductTierSeeder::class,
             SettingsSeeder::class,
             DemoSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

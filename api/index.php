@@ -55,12 +55,28 @@ if (!$dbConn || $dbConn === 'sqlite') {
     $targetDb = '/tmp/database.sqlite';
     $sourceDb = __DIR__ . '/../database/database.sqlite';
 
-    if (file_exists($sourceDb)) {
-        if (!file_exists($targetDb) || filesize($targetDb) < filesize($sourceDb)) {
+    if (file_exists($sourceDb) && filesize($sourceDb) > 0) {
+        $needCopy = !file_exists($targetDb)
+            || filesize($targetDb) < filesize($sourceDb)
+            || filemtime($sourceDb) > filemtime($targetDb);
+
+        if (!$needCopy) {
+            try {
+                $sqlite = new \SQLite3($targetDb);
+                $pCount = @$sqlite->querySingle('SELECT count(*) FROM products');
+                $sqlite->close();
+                if ($pCount === 0 || $pCount === false) {
+                    $needCopy = true;
+                }
+            } catch (\Throwable $e) {
+                $needCopy = true;
+            }
+        }
+
+        if ($needCopy) {
             @copy($sourceDb, $targetDb);
             @chmod($targetDb, 0666);
         }
-
     } elseif (!file_exists($targetDb)) {
         @touch($targetDb);
         @chmod($targetDb, 0666);

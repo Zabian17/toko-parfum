@@ -35,7 +35,7 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_CONNECTION') === 'sqlite' && env('DB_DATABASE') && (str_contains(env('DB_DATABASE'), '.sqlite') || str_contains(env('DB_DATABASE'), DIRECTORY_SEPARATOR) || str_contains(env('DB_DATABASE'), '/'))
+            'database' => env('DB_DATABASE') === ':memory:' || (env('DB_CONNECTION') === 'sqlite' && env('DB_DATABASE') && (str_contains(env('DB_DATABASE'), '.sqlite') || str_contains(env('DB_DATABASE'), DIRECTORY_SEPARATOR) || str_contains(env('DB_DATABASE'), '/')))
                 ? env('DB_DATABASE')
                 : database_path('database.sqlite'),
             'prefix' => '',
