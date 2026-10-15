@@ -26,9 +26,10 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview'
     $consoleKernel->bootstrap();
 
     $connection = Illuminate\Support\Facades\DB::connection();
-    $migrationLock = 202610150002;
+    $migrationLock = 202610150003;
     $lock = $connection->selectOne('SELECT pg_try_advisory_lock(?) AS locked', [$migrationLock]);
     if (!in_array($lock->locked, [true, 1, '1', 't'], true)) {
+        $connection->disconnect();
         http_response_code(503);
         header('Content-Type: text/plain; charset=UTF-8');
         exit('Preview database setup is already running. Retry shortly.');
@@ -60,6 +61,7 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview'
         $setupMessage = 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
     } finally {
         $connection->select('SELECT pg_advisory_unlock(?)', [$migrationLock]);
+        $connection->disconnect();
     }
 
     header('Content-Type: text/plain; charset=UTF-8');
