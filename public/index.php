@@ -46,8 +46,10 @@ if ((getenv('VERCEL_ENV') ?: '') === 'preview' && (getenv('DB_CONNECTION') ?: ''
             }
         }
     } catch (Throwable $error) {
-        error_log('Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage());
-        throw $error;
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'Preview database bootstrap failed: '.get_class($error).' '.$error->getMessage();
+        exit;
     } finally {
         $connection->select('SELECT pg_advisory_unlock(?)', [$migrationLock]);
     }
