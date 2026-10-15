@@ -131,17 +131,21 @@ class DashboardController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+        $monthExpr = $isSqlite ? "strftime('%Y-%m', created_at)" : "DATE_FORMAT(created_at, '%Y-%m')";
+        $dayExpr   = $isSqlite ? "date(created_at)" : "DATE(created_at)";
+
         if ($period === 'daily') {
             $data = (clone $query)
                 ->where('created_at', '>=', now()->subDays(29))
-                ->selectRaw('DATE(created_at) as label, SUM(total_amount) as total, COUNT(*) as count')
+                ->selectRaw("{$dayExpr} as label, SUM(total_amount) as total, COUNT(*) as count")
                 ->groupBy('label')
                 ->orderBy('label')
                 ->get();
         } else {
             $data = (clone $query)
                 ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
-                ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as label, SUM(total_amount) as total, COUNT(*) as count")
+                ->selectRaw("{$monthExpr} as label, SUM(total_amount) as total, COUNT(*) as count")
                 ->groupBy('label')
                 ->orderBy('label')
                 ->get();
