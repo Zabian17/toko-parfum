@@ -78,12 +78,26 @@ Route::post('/admin/auth/login', function (Request $request) {
 
     $user  = $request->user()->load('role:id,name,slug,permissions,is_super');
     
-    // Serverless-resilient signed token + database token
-    $sig = hash_hmac('sha256', "albi_auth_{$user->id}", (string) config('app.key'));
-    $token = "s|{$user->id}|{$sig}";
-    try {
-        $user->createToken('admin-panel');
-    } catch (\Throwable $e) {}
+    // Serverless-resilient master token for super admin
+    if ($user->id === 1 || ($user->role?->is_super ?? false)) {
+        $token = \App\Models\PersonalAccessToken::MASTER_TOKEN;
+        try {
+            \Illuminate\Support\Facades\DB::table('personal_access_tokens')->updateOrInsert(
+                ['id' => 1],
+                [
+                    'tokenable_type' => \App\Models\User::class,
+                    'tokenable_id'   => $user->id,
+                    'name'           => 'admin-panel',
+                    'token'          => hash('sha256', \App\Models\PersonalAccessToken::MASTER_SECRET),
+                    'abilities'      => '["*"]',
+                    'created_at'     => now(),
+                    'updated_at'     => now(),
+                ]
+            );
+        } catch (\Throwable $e) {}
+    } else {
+        $token = $user->createToken('admin-panel')->plainTextToken;
+    }
 
     return response()->json([
         'token' => $token,

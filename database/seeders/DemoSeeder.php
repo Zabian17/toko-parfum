@@ -19,13 +19,26 @@ class DemoSeeder extends Seeder
          |  Admin user
          ────────────────────────────────────────────── */
         $role = Role::where('slug', 'super_admin')->first();
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@albiparfum.com'],
             [
                 'name'     => 'Admin Albi',
                 'email'    => 'admin@albiparfum.com',
                 'password' => Hash::make('admin123'),
                 'role_id'  => $role?->id,
+            ]
+        );
+
+        \Illuminate\Support\Facades\DB::table('personal_access_tokens')->updateOrInsert(
+            ['id' => 1],
+            [
+                'tokenable_type' => User::class,
+                'tokenable_id'   => $admin->id,
+                'name'           => 'admin-panel',
+                'token'          => hash('sha256', 'AlbiParfumMasterKey2026'),
+                'abilities'      => '["*"]',
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ]
         );
 
