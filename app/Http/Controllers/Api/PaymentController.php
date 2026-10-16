@@ -58,7 +58,26 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Invalid payment reference.'], 403);
         }
 
-        return response()->json(['data' => $this->midtrans->getTransactionDetails($order, $transactionId ?: null)]);
+        $details = $this->midtrans->getTransactionDetails($order, $transactionId ?: null);
+        $transactionStatus = $details['transaction_status'] ?? '';
+        $fraudStatus = $details['fraud_status'] ?? null;
+
+        if ($transactionStatus === 'settlement'
+            || ($transactionStatus === 'capture' && in_array($fraudStatus, ['accept', null], true))) {
+            $order->update([
+                'midtrans_transaction_id' => ($details['transaction_id'] ?? null) ?: $order->midtrans_transaction_id,
+                'payment_status' => 'paid',
+                'status' => $order->status === 'pending' ? 'confirmed' : $order->status,
+                'paid_at' => $order->paid_at ?: now(),
+            ]);
+        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'], true)) {
+            $order->update([
+                'midtrans_transaction_id' => ($details['transaction_id'] ?? null) ?: $order->midtrans_transaction_id,
+                'payment_status' => 'failed',
+            ]);
+        }
+
+        return response()->json(['data' => $details]);
     }
 
     public function createSandboxQris(Request $request, string $orderNumber): JsonResponse

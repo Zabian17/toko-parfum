@@ -215,8 +215,10 @@ class MidtransService
             ->values()->all();
 
         return [
+            'transaction_id' => $data['transaction_id'] ?? '',
             'payment_type' => $data['payment_type'] ?? '',
             'transaction_status' => $data['transaction_status'] ?? '',
+            'fraud_status' => $data['fraud_status'] ?? null,
             'payment_code' => $data['payment_code'] ?? '',
             'va_numbers' => $data['va_numbers'] ?? [],
             'permata_va_number' => $data['permata_va_number'] ?? '',

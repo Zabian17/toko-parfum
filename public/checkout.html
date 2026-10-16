@@ -742,7 +742,19 @@ async function handleCheckout(e) {
         const snapToken = snapResponse.data?.data?.token || snapResponse.data?.token;
         if (!snapToken || !window.snap?.pay) throw new Error('Pembayaran Midtrans belum siap.');
         window.snap.pay(snapToken, {
-          onSuccess: () => handleOrderSuccess(order, 'Pembayaran berhasil!'),
+          onSuccess: async (result) => {
+            try {
+              const verifiedResponse = await PaymentAPI.details(order.order_number, snapToken, result?.transaction_id);
+              const verified = verifiedResponse.data?.data || {};
+              const paid = verified.transaction_status === 'settlement'
+                || (verified.transaction_status === 'capture' && ['accept', null].includes(verified.fraud_status));
+              handleOrderSuccess(order, paid
+                ? 'Pembayaran berhasil dan terverifikasi.'
+                : 'Pembayaran diterima Midtrans. Status toko sedang diverifikasi.');
+            } catch (_) {
+              handleOrderSuccess(order, 'Pembayaran diterima Midtrans. Status toko sedang diverifikasi.');
+            }
+          },
           onPending: (result) => {
             midtransPendingResult = result || {};
             showMidtransPending(order, midtransPendingResult, snapToken);
