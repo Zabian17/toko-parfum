@@ -9,17 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <link href="/css/theme.css" rel="stylesheet" />
+  <link href="../css/theme.css?v=2" rel="stylesheet" />
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav class="navbar-albi">
   <div class="container d-flex align-items-center gap-3">
-    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+    <a href="../" class="brand-name me-auto">Albi <span>Parfum</span></a>
     <div class="search-bar d-none d-md-flex" style="width:280px">
-      <input type="text" id="search-input" placeholder="Cari parfum…" onkeydown="if(event.key==='Enter')window.location.href='/?q='+encodeURIComponent(this.value)" />
-      <button onclick="window.location.href='/?q='+encodeURIComponent(document.getElementById('search-input').value)"><i class="bi bi-search"></i></button>
+      <input type="text" id="search-input" placeholder="Cari parfum…" onkeydown="if(event.key==='Enter')window.location.href='../katalog?q='+encodeURIComponent(this.value)" />
+      <button onclick="window.location.href='../katalog?q='+encodeURIComponent(document.getElementById('search-input').value)"><i class="bi bi-search"></i></button>
     </div>
     <a href="../" class="nav-link-albi d-none d-md-inline">Beranda</a>
     <a href="../katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
@@ -98,7 +98,7 @@
     </div>
 
     <div class="mt-5 text-center">
-      <a href="/" class="btn-gold" style="text-decoration:none;padding:0.75rem 2rem;font-size:0.95rem">
+      <a href="../katalog" class="btn-gold" style="text-decoration:none;padding:0.75rem 2rem;font-size:0.95rem">
         <i class="bi bi-shop me-2"></i>Mulai Belanja Sekarang
       </a>
     </div>
@@ -113,24 +113,19 @@
         <div class="footer-brand">Albi <span>Parfum</span></div>
         <div class="footer-tagline">Parfum original berkualitas tinggi untuk setiap momen spesialmu.</div>
       </div>
-      <div class="col-6 col-md-2">
-        <h6>Navigasi</h6>
+      <div class="col-6 col-md-4">
+        <h6>Belanja</h6>
         <a href="../">Beranda</a>
         <a href="../katalog">Katalog</a>
         <a href="../cart">Keranjang</a>
+        <a href="../checkout">Checkout</a>
+      </div>
+      <div class="col-6 col-md-4">
+        <h6>Bantuan &amp; Pesanan</h6>
+        <a href="cara-pemesanan">Cara Pemesanan</a>
+        <a href="pengiriman">Pengiriman</a>
+        <a href="kebijakan-retur">Kebijakan Retur</a>
         <a href="../lacak">Lacak Pesanan</a>
-      </div>
-      <div class="col-6 col-md-3">
-        <h6>Bantuan</h6>
-        <a href="cara-pemesanan.html">Cara Pemesanan</a>
-        <a href="pengiriman.html">Pengiriman</a>
-        <a href="kebijakan-retur.html">Kebijakan Retur</a>
-      </div>
-      <div class="col-12 col-md-3">
-        <h6>Kontak</h6>
-        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
-        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
-        <a href="#"><i class="bi bi-envelope me-1"></i> Email</a>
       </div>
     </div>
     <hr class="footer-divider" />
