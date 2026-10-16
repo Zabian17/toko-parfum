@@ -103,7 +103,7 @@
             <h6 class="admin-card-title"><i class="bi bi-credit-card me-2"></i>Pembayaran</h6>
           </div>
           <div class="row g-3 p-3">
-            <div class="col-12"><p class="text-muted mb-0">Checkout saat ini menerima Transfer Bank dan COD. Midtrans dinonaktifkan.</p></div>
+            <div class="col-12"><p class="text-muted mb-0" id="payment-status-summary" role="status" aria-live="polite">Memeriksa metode pembayaran…</p></div>
             <div class="col-12">
               <div class="admin-toggle-group">
                 <label class="admin-toggle">
@@ -241,6 +241,13 @@ const FIELDS_BOOL = [
   'rajaongkir_enabled','cod_enabled','bank_transfer_enabled',
   'email_notification_enabled','low_stock_alert',
 ];
+const DEFAULTS_BOOL = {
+  rajaongkir_enabled: true,
+  cod_enabled: true,
+  bank_transfer_enabled: true,
+  email_notification_enabled: false,
+  low_stock_alert: false,
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!AdminAuth.requireAuth()) return;
@@ -290,6 +297,7 @@ async function loadSettings() {
     const data = res.data.data || res.data;
     originalSettings = flattenSettings(data);
     fillForm(originalSettings);
+    loadPaymentStatus();
     await loadStoreAddress(originalSettings);
     loading.classList.add('d-none');
     document.getElementById('settings-form').classList.remove('d-none');
@@ -298,6 +306,29 @@ async function loadSettings() {
     document.getElementById('settings-error-message').textContent = error.response?.data?.message || 'Gagal memuat pengaturan. Periksa koneksi lalu coba lagi.';
     document.getElementById('settings-retry').addEventListener('click', loadSettings);
   }
+}
+
+async function loadPaymentStatus() {
+  const summary = document.getElementById('payment-status-summary');
+  try {
+    const apiBase = getApiBaseAdmin().replace(/\/admin\/?$/, '');
+    const res = await axios.get(`${apiBase}/payment/config`);
+    const config = res.data?.data || {};
+    const methods = [
+      settingIsEnabled(config.midtrans_enabled) ? 'Midtrans' : null,
+      settingIsEnabled(config.bank_transfer_enabled) ? 'Transfer Bank' : null,
+      settingIsEnabled(config.cod_enabled) ? 'COD' : null,
+    ].filter(Boolean);
+    summary.textContent = methods.length
+      ? `Metode pembayaran aktif di checkout: ${methods.join(', ')}.`
+      : 'Belum ada metode pembayaran yang aktif di checkout.';
+  } catch {
+    summary.textContent = 'Status metode pembayaran tidak dapat dimuat. Coba muat ulang pengaturan.';
+  }
+}
+
+function settingIsEnabled(value) {
+  return value === true || value === 1 || value === '1';
 }
 
 /* API returns [{id, key, value, group}] array — flatten to {key: value} map */
@@ -322,7 +353,10 @@ function fillForm(settings) {
   });
   FIELDS_BOOL.forEach(k => {
     const el = document.getElementById(k);
-    if (el) el.checked = settings[k] === true || settings[k] === '1' || settings[k] === 1;
+    if (el) {
+      const value = settings[k];
+      el.checked = value === undefined ? DEFAULTS_BOOL[k] : settingIsEnabled(value);
+    }
   });
 }
 
@@ -466,6 +500,7 @@ async function saveSettings(e) {
   try {
     await adminApi.post('/settings', payload);
     originalSettings = payload;
+    loadPaymentStatus();
     showAlert('Pengaturan berhasil disimpan');
   } catch(err) {
     const msg = err.response?.data?.message || 'Gagal menyimpan pengaturan';

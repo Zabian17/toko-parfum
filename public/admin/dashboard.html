@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadDashboard() {
   try {
-    const res = await adminApi.get('/dashboard');
+    const res = await adminApi.get('/dashboard', { timeout: 30000 });
     const d = res.data?.data || res.data || {};
     renderStats(d.summary || {});
     renderOrderBreakdown(d.order_status_breakdown || {});

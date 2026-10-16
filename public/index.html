@@ -223,9 +223,8 @@ async function pageInit() {
   try {
     Cart._notifyBadge();
     console.log('[PAGE] calling loadCategories...');
-    await loadCategories();
-    console.log('[PAGE] calling loadProducts...');
-    await loadProducts();
+    console.log('[PAGE] loading categories and products...');
+    await Promise.all([loadCategories(), loadProducts()]);
     console.log('[PAGE] calling bindEvents...');
     bindEvents();
     console.log('%c[PAGE] init complete', 'color:#27ae60;font-weight:bold');

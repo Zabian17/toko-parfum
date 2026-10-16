@@ -229,7 +229,7 @@ async function loadTransactions() {
       if (dateTo)   params.date_to   = dateTo;
     }
     const apiPeriod = period === 'custom' ? 'daily' : period;
-    const res = await adminApi.get(`/reports/sales/${apiPeriod}`, { params });
+    const res = await adminApi.get(`/reports/sales/${apiPeriod}`, { params, timeout: 30000 });
     txData = res.data.data || [];
     const grandTotal = res.data.grand_total || 0;
     const grandCount = res.data.grand_count || 0;
