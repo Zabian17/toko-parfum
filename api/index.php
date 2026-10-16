@@ -51,6 +51,23 @@ if (!getenv('LOG_CHANNEL')) {
 
 // SQLite database setup in /tmp
 $dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? null);
+$databaseUrl = getenv('POSTGRES_URL_NON_POOLING')
+    ?: ($_ENV['POSTGRES_URL_NON_POOLING'] ?? null)
+    ?: getenv('DATABASE_URL')
+    ?: ($_ENV['DATABASE_URL'] ?? null);
+
+// Neon exposes DATABASE_URL to Vercel Preview. Map it to Laravel's standard
+// PostgreSQL settings before the SQLite fallback below.
+if ((!$dbConn || $dbConn === 'sqlite') && $databaseUrl && (getenv('VERCEL_ENV') ?: '') === 'preview') {
+    $dbConn = 'pgsql';
+    putenv('DB_CONNECTION=pgsql');
+    putenv("DB_URL={$databaseUrl}");
+    $_ENV['DB_CONNECTION'] = 'pgsql';
+    $_ENV['DB_URL'] = $databaseUrl;
+    $_SERVER['DB_CONNECTION'] = 'pgsql';
+    $_SERVER['DB_URL'] = $databaseUrl;
+}
+
 if (!$dbConn || $dbConn === 'sqlite') {
     $targetDb = '/tmp/database.sqlite';
     $sourceDb = __DIR__ . '/../database/database.sqlite';

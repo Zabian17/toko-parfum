@@ -38,12 +38,17 @@ class CashierController extends Controller
             $variant = !empty($item['product_variant_id'])
                 ? ProductVariant::with('tier')->findOrFail($item['product_variant_id'])
                 : null;
+            if ($variant && (int) $variant->product_id !== (int) $product->id) {
+                abort(422, 'Varian ukuran produk tidak valid.');
+            }
 
             // Price always comes from the tier master
             $price        = $variant ? (float) $variant->tier->price : 0.0;
             $qty          = (int) $item['quantity'];
             $itemSubtotal = $price * $qty;
             $subtotal    += $itemSubtotal;
+            $itemWeight = (int) ($variant?->weight ?? 0);
+            $totalWeight += $itemWeight * $qty;
 
             $lines[] = [
                 'product_id'         => $product->id,
@@ -53,6 +58,7 @@ class CashierController extends Controller
                 'tier'               => $variant?->tier,
                 'unit_price'         => $price,
                 'quantity'           => $qty,
+                'weight'             => $itemWeight,
                 'subtotal'           => $itemSubtotal,
                 'available_stock'    => $variant ? $variant->stock : 0,
             ];

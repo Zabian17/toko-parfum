@@ -93,6 +93,32 @@ class RajaOngkirService
         });
     }
 
+    public function searchDestinations(string $search): array
+    {
+        $search = trim($search);
+        if ($search === '') {
+            return [];
+        }
+
+        $cacheKey = 'rajaongkir_destinations_v2_' . sha1(mb_strtolower($search));
+
+        return $this->withCache($cacheKey, function () use ($search) {
+            $response = Http::withHeaders($this->headers())
+                ->timeout(15)
+                ->get("{$this->baseUrl}/destination/domestic-destination", [
+                    'search' => $search,
+                    'limit' => 100,
+                    'offset' => 0,
+                ]);
+
+            if (!$response->successful()) {
+                throw new \RuntimeException('RajaOngkir destination search returned HTTP ' . $response->status());
+            }
+
+            return $this->extractData($response);
+        });
+    }
+
     public function getCost(
         string $originCityId,
         string $destinationCityId,
@@ -103,7 +129,7 @@ class RajaOngkirService
             $response = Http::withHeaders($this->headers())
                 ->asForm()
                 ->timeout(15)
-                ->post("{$this->baseUrl}/calculate/district/domestic-cost", [
+                ->post("{$this->baseUrl}/calculate/domestic-cost", [
                     'origin'      => $originCityId,
                     'destination' => $destinationCityId,
                     'weight'      => $weight,
@@ -120,8 +146,13 @@ class RajaOngkirService
 
     public function isEnabled(): bool
     {
-        return !empty($this->apiKey)
+        return $this->hasApiKey()
             && Setting::get('rajaongkir_enabled', true);
+    }
+
+    public function hasApiKey(): bool
+    {
+        return $this->apiKey !== '';
     }
 
     public function getDefaultOriginId(): ?string
@@ -129,13 +160,9 @@ class RajaOngkirService
         $origin = Setting::get('rajaongkir_origin');
 
         if (empty($origin)) {
-            $origin = Setting::get('store_city_id');
-        }
-
-        if (empty($origin)) {
             $origin = config('services.rajaongkir.default_origin');
         }
 
-        return empty($origin) ? '136' : (string) $origin;
+        return empty($origin) ? null : (string) $origin;
     }
 }

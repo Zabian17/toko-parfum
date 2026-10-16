@@ -12,12 +12,14 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'tier_id',
+        'weight',
         'stock',
         'is_active',
     ];
 
     protected $casts = [
         'stock'     => 'integer',
+        'weight'    => 'integer',
         'is_active' => 'boolean',
     ];
 

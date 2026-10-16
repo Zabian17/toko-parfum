@@ -17,10 +17,11 @@
 <!-- NAVBAR -->
 <nav class="navbar-albi">
   <div class="container d-flex align-items-center gap-3">
-    <a href="/" class="brand-name me-auto">Albi <span>Parfum</span></a>
+    <a href="./" class="brand-name me-auto">Albi <span>Parfum</span></a>
     <a href="./" class="nav-link-albi d-none d-md-inline">Beranda</a>
     <a href="katalog" class="nav-link-albi d-none d-md-inline">Katalog</a>
     <a href="lacak" class="nav-link-albi d-none d-md-inline">Lacak Pesanan</a>
+    <a href="pages/cara-pemesanan" class="nav-link-albi d-none d-md-inline">Bantuan</a>
     <a href="cart" class="nav-link-albi position-relative px-2">
       <i class="bi bi-bag" style="font-size:1.2rem"></i>
       <span class="cart-badge" data-cart-badge style="display:none">0</span>
@@ -32,7 +33,7 @@
 <div class="container">
   <nav aria-label="breadcrumb" class="breadcrumb-albi">
     <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a href="/">Beranda</a></li>
+      <li class="breadcrumb-item"><a href="./">Beranda</a></li>
       <li class="breadcrumb-item"><a href="cart">Keranjang</a></li>
       <li class="breadcrumb-item active">Checkout</li>
     </ol>
@@ -44,7 +45,7 @@
   <div class="empty-state">
     <div class="empty-state-icon"><i class="bi bi-bag-x"></i></div>
     <p class="empty-state-title">Keranjang kamu kosong</p>
-    <a href="/#katalog" class="btn-gold d-inline-block mt-3" style="text-decoration:none;padding:0.65rem 1.8rem">Lihat Katalog</a>
+    <a href="./#katalog" class="btn-gold d-inline-block mt-3" style="text-decoration:none;padding:0.65rem 1.8rem">Lihat Katalog</a>
   </div>
 </div>
 
@@ -78,6 +79,7 @@
               <div class="invalid-feedback">Nomor HP harus diisi</div>
             </div>
           </div>
+
         </div>
 
         <!-- Alamat Pengiriman -->
@@ -114,14 +116,24 @@
               <div class="invalid-feedback">Kode pos harus diisi</div>
             </div>
           </div>
+
+          <div class="mt-3">
+            <label class="form-label" for="field-destination">Kecamatan / Area Tujuan <span class="text-danger">*</span></label>
+            <input type="search" id="field-destination-search" class="form-control mb-2" placeholder="Cari nama kecamatan atau kode pos" autocomplete="off" disabled />
+            <select id="field-destination" class="form-select" required disabled>
+              <option value="">Pilih kota, lalu cari kecamatan atau kode pos</option>
+            </select>
+            <div class="invalid-feedback">Pilih area tujuan pengiriman</div>
+            <small class="text-muted">Ketik minimal 3 karakter nama kecamatan atau kode pos, lalu pilih area yang sesuai.</small>
+          </div>
         </div>
 
         <!-- Metode Pengiriman -->
         <div class="checkout-section">
           <div class="checkout-section-title"><i class="bi bi-truck me-2"></i>Metode Pengiriman</div>
-          <div id="shipping-options" class="d-none"></div>
-          <p id="shipping-hint" class="section-subtitle" style="font-size:0.82rem">
-            Tarif pengiriman tetap untuk semua tujuan. Pesanan dikirim dengan layanan reguler.
+          <div id="shipping-options" class="d-none" role="radiogroup" aria-label="Pilih layanan pengiriman"></div>
+          <p id="shipping-hint" class="section-subtitle" style="font-size:0.82rem" aria-live="polite">
+            Isi kode pos dan pilih area tujuan untuk melihat tarif kurir RajaOngkir.
           </p>
         </div>
 
@@ -129,16 +141,24 @@
         <div class="checkout-section">
           <div class="checkout-section-title"><i class="bi bi-credit-card me-2"></i>Metode Pembayaran</div>
 
-          <div class="payment-option selected" data-method="midtrans">
-            <input type="radio" name="payment" value="midtrans" checked />
+          <div class="payment-option is-disabled" data-method="midtrans" aria-disabled="true">
+            <input type="radio" name="payment" value="midtrans" disabled />
             <div>
-              <div class="shipping-option-name">Online Payment (Midtrans)</div>
-              <div class="shipping-option-detail">Transfer, QRIS, VA, Kartu Kredit, dll.</div>
+              <div class="shipping-option-name">Online Payment (Midtrans Snap)</div>
+              <div class="shipping-option-detail" id="midtrans-detail">Sandbox belum aktif. Isi kedua API key dan set MIDTRANS_ENABLED=true di .env.</div>
             </div>
           </div>
 
-          <div class="payment-option" data-method="transfer">
-            <input type="radio" name="payment" value="transfer" />
+          <div class="payment-option is-disabled d-none" data-method="midtrans_qris" aria-disabled="true">
+            <input type="radio" name="payment" value="midtrans_qris" disabled />
+            <div>
+              <div class="shipping-option-name">QRIS Sandbox (URL Simulator)</div>
+              <div class="shipping-option-detail">Buat URL gambar QRIS untuk Simulator Midtrans tanpa membuka Snap.</div>
+            </div>
+          </div>
+
+          <div class="payment-option selected" data-method="transfer">
+            <input type="radio" name="payment" value="transfer" checked />
             <div>
               <div class="shipping-option-name">Transfer Bank Manual</div>
               <div class="shipping-option-detail">Konfirmasi transfer dikirim via email</div>
@@ -170,7 +190,7 @@
 
       <!-- ===== RIGHT: Order Summary ===== -->
       <div class="col-12 col-lg-5">
-        <div class="cart-summary-box" style="position:sticky;top:80px">
+        <div class="cart-summary-box checkout-summary-sticky">
           <h3 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:1rem">
             <i class="bi bi-receipt me-2" style="color:var(--gold)"></i>Ringkasan Pesanan
           </h3>
@@ -216,13 +236,14 @@
 <div id="order-success" class="container py-5 d-none" style="max-width:600px">
   <div class="checkout-section text-center py-4">
     <div class="success-icon"><i class="bi bi-check-lg"></i></div>
-    <h2 class="fw-serif mb-2" style="font-family:var(--font-serif)">Pesanan Berhasil!</h2>
-    <p style="color:var(--gray-600)">Terima kasih! Pesananmu sedang diproses.</p>
+    <h2 class="fw-serif mb-2" style="font-family:var(--font-serif)">Pesanan Tercatat!</h2>
+    <p style="color:var(--gray-600)">Terima kasih. Lihat informasi pembayaran untuk langkah selanjutnya.</p>
     <p id="order-number-text" class="fw-bold my-3" style="font-size:1rem;color:var(--gold-dark)"></p>
     <p style="font-size:0.85rem;color:var(--gray-600)" id="payment-info-text"></p>
+    <div id="midtrans-payment-details" class="text-start d-none mt-3" style="background:var(--cream,#faf8f5);border:1px solid var(--gray-200,#e8e2da);border-radius:8px;padding:1rem"></div>
     <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
-      <a href="/" class="btn-outline-gold" style="text-decoration:none;padding:0.6rem 1.5rem">Lanjut Belanja</a>
-      <a id="btn-track-success" href="/lacak" class="btn-gold" style="text-decoration:none;padding:0.6rem 1.5rem">Lacak Pesanan</a>
+      <a href="./" class="btn-outline-gold" style="text-decoration:none;padding:0.6rem 1.5rem">Lanjut Belanja</a>
+      <a id="btn-track-success" href="lacak" class="btn-gold" style="text-decoration:none;padding:0.6rem 1.5rem">Lacak Pesanan</a>
     </div>
   </div>
 </div>
@@ -248,9 +269,9 @@
         <a href="pages/pengiriman">Pengiriman</a>
       </div>
       <div class="col-12 col-md-3">
-        <h6>Kontak</h6>
-        <a href="#"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>
-        <a href="#"><i class="bi bi-instagram me-1"></i> Instagram</a>
+        <h6>Bantuan</h6>
+        <a href="pages/cara-pemesanan">Cara Pemesanan</a>
+        <a href="pages/pengiriman">Informasi Pengiriman</a>
       </div>
     </div>
     <hr class="footer-divider" />
@@ -258,8 +279,6 @@
   </div>
 </footer>
 
-<!-- Midtrans Snap JS (conditionally used) -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="" id="midtrans-script"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -273,9 +292,14 @@
 let shippingCost = 0;
 let selectedCourier = null;
 let selectedCityId = null;
-let paymentMethod = 'midtrans';
-let midtransClientKey = '';
-let defaultShippingCost = 20000;
+let selectedDestinationId = null;
+let shippingRates = [];
+let destinationLookupId = 0;
+let shippingQuoteId = 0;
+let paymentMethod = 'transfer';
+let midtransSnapPromise = null;
+let midtransIsProduction = false;
+let midtransPendingResult = null;
 
 async function pageInit() {
   Cart._notifyBadge();
@@ -299,8 +323,9 @@ async function pageInit() {
     };
     $('#field-province').select2({ ...selectOptions, placeholder: '— Pilih Provinsi —' });
     $('#field-city').select2({ ...selectOptions, placeholder: '— Pilih Kota —' });
+    $('#field-destination').select2({ ...selectOptions, placeholder: 'Cari nama kecamatan atau kode pos' });
   }
-  applyFlatShipping();
+  updateTotals();
   bindEvents();
 }
 
@@ -327,7 +352,7 @@ function renderOrderSummary() {
 function updateTotals() {
   const subtotal = Cart.subtotal();
   document.getElementById('summary-subtotal').textContent = formatRupiah(subtotal);
-  document.getElementById('summary-shipping').textContent = shippingCost > 0 ? formatRupiah(shippingCost) : '—';
+  document.getElementById('summary-shipping').textContent = selectedCourier ? formatRupiah(shippingCost) : 'Belum dipilih';
   document.getElementById('summary-total').textContent = formatRupiah(subtotal + shippingCost);
 }
 
@@ -368,19 +393,129 @@ async function loadCities(provinceId) {
   }
 }
 
-/* ---- Apply the configured flat shipping rate ---- */
-function applyFlatShipping() {
+function clearShippingOptions(message = 'Pilih area tujuan untuk melihat tarif kurir RajaOngkir.') {
+  shippingQuoteId++;
+  shippingCost = 0;
+  selectedCourier = null;
+  shippingRates = [];
   const optionsEl = document.getElementById('shipping-options');
-  const hintEl    = document.getElementById('shipping-hint');
-  shippingCost = defaultShippingCost;
-  selectedCourier = 'reguler:REG';
-  optionsEl.innerHTML = `<div class="shipping-option selected" aria-label="Pengiriman reguler, ${formatRupiah(shippingCost)}">
-    <div style="flex:1"><div class="shipping-option-name">Pengiriman Reguler</div>
-    <div class="shipping-option-detail">Tarif tetap, konfirmasi nomor resi setelah pesanan dikirim.</div></div>
-    <div class="shipping-option-price">${shippingCost > 0 ? formatRupiah(shippingCost) : 'Gratis'}</div>
-  </div>`;
+  optionsEl.innerHTML = '';
+  optionsEl.classList.add('d-none');
+  const hint = document.getElementById('shipping-hint');
+  hint.textContent = message;
+  hint.classList.remove('d-none');
+  updateTotals();
+}
+
+async function loadDestinationChoices() {
+  const search = document.getElementById('field-destination-search').value.trim();
+  const province = document.getElementById('field-province').selectedOptions[0]?.text || '';
+  const city = document.getElementById('field-city').selectedOptions[0]?.text || '';
+  const select = document.getElementById('field-destination');
+  const requestId = ++destinationLookupId;
+  selectedDestinationId = null;
+  clearShippingOptions('Cari area tujuan dengan nama kecamatan atau kode pos.');
+
+  select.innerHTML = '<option value="">Ketik nama kecamatan atau kode pos untuk mencari area</option>';
+  select.disabled = true;
+  if (window.jQuery && $.fn.select2) $(select).val('').trigger('change.select2');
+  if (!city || !province) {
+    document.getElementById('shipping-hint').textContent = 'Pilih provinsi dan kota terlebih dahulu.';
+    return;
+  }
+  if (search.length < 3 && !/^\d{5}$/.test(search)) {
+    document.getElementById('shipping-hint').textContent = 'Ketik minimal 3 karakter nama kecamatan atau masukkan 5 digit kode pos.';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Mencari area…</option>';
+  try {
+    const response = await ShippingAPI.destinations(search);
+    if (requestId !== destinationLookupId) return;
+    const areas = response.data.data || [];
+    const normalize = value => String(value || '').toLocaleLowerCase('id-ID').replace(/^(kota(?: administrasi)?|kabupaten(?: administrasi)?|kab\.?)\s+/i, '').trim();
+    const normalizedCity = normalize(city);
+    const normalizedProvince = normalize(province);
+    const matches = areas.filter(area =>
+      (!area.city_name || normalize(area.city_name).includes(normalizedCity) || normalizedCity.includes(normalize(area.city_name)))
+      && (!area.province_name || normalize(area.province_name).includes(normalizedProvince) || normalizedProvince.includes(normalize(area.province_name)))
+    );
+    const choices = matches;
+    select.innerHTML = '<option value="">— Pilih kecamatan / area —</option>';
+    choices.forEach(area => {
+      const label = area.label || [area.subdistrict_name, area.district_name, area.city_name, area.province_name, area.zip_code].filter(Boolean).join(', ');
+      select.add(new Option(label, area.id));
+      select.options[select.options.length - 1].dataset.postalCode = area.zip_code || '';
+    });
+    select.disabled = choices.length === 0;
+    const hint = document.getElementById('shipping-hint');
+    if (choices.length === 1) {
+      select.value = String(choices[0].id);
+      hint.textContent = 'Area ditemukan. Menghitung tarif kurir…';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    } else {
+      if (window.jQuery && $.fn.select2) $(select).trigger('change.select2');
+      hint.textContent = choices.length
+        ? 'Pilih kecamatan/area tujuan untuk menghitung tarif kurir.'
+        : 'Area tidak ditemukan di kota ini. Periksa kode pos atau alamat tujuan.';
+    }
+  } catch (error) {
+    if (requestId !== destinationLookupId) return;
+    select.innerHTML = '<option value="">Area tidak ditemukan</option>';
+    document.getElementById('shipping-hint').textContent = error.response?.data?.message || 'Pencarian area gagal. Periksa koneksi atau API RajaOngkir.';
+  }
+}
+
+async function loadShippingOptions() {
+  const select = document.getElementById('field-destination');
+  selectedDestinationId = select.value || null;
+  clearShippingOptions('Menghitung tarif RajaOngkir…');
+  if (!selectedDestinationId) return;
+
+  const requestId = ++shippingQuoteId;
+  const optionsEl = document.getElementById('shipping-options');
+  const hint = document.getElementById('shipping-hint');
+  hint.classList.add('d-none');
+  optionsEl.innerHTML = '<p class="section-subtitle">Menghitung ongkir…</p>';
   optionsEl.classList.remove('d-none');
-  hintEl.classList.add('d-none');
+
+  try {
+    const response = await ShippingAPI.cost({
+      destination_id: selectedDestinationId,
+      items: Cart.toOrderItems(),
+    });
+    if (requestId !== shippingQuoteId) return;
+    shippingRates = response.data.data || [];
+    optionsEl.innerHTML = shippingRates.map((rate, index) => `
+      <div class="shipping-option${index === 0 ? ' selected' : ''}" role="radio" aria-checked="${index === 0}" tabindex="0" data-shipping-rate="${index}">
+        <div style="flex:1;min-width:0">
+          <div class="shipping-option-name">${escHtml(rate.name || rate.code || 'Kurir')} — ${escHtml(rate.service || 'Layanan')}</div>
+          <div class="shipping-option-detail">${escHtml(rate.description || '')}${rate.etd ? ` · Estimasi ${escHtml(rate.etd)}` : ''}</div>
+        </div>
+        <div class="shipping-option-price">${formatRupiah(rate.cost)}</div>
+      </div>
+    `).join('');
+    if (!shippingRates.length) throw new Error('Tarif kurir tidak tersedia untuk area ini.');
+    selectShippingRate(0);
+  } catch (error) {
+    if (requestId !== shippingQuoteId) return;
+    optionsEl.innerHTML = '';
+    optionsEl.classList.add('d-none');
+    hint.textContent = error.response?.data?.message || error.message || 'Gagal menghitung ongkir. Periksa area asal toko dan konfigurasi RajaOngkir.';
+    hint.classList.remove('d-none');
+  }
+}
+
+function selectShippingRate(index) {
+  const rate = shippingRates[index];
+  if (!rate) return;
+  selectedCourier = { code: rate.code, service: rate.service };
+  shippingCost = Number(rate.cost) || 0;
+  document.querySelectorAll('[data-shipping-rate]').forEach(option => {
+    const selected = Number(option.dataset.shippingRate) === index;
+    option.classList.toggle('selected', selected);
+    option.setAttribute('aria-checked', String(selected));
+  });
   updateTotals();
 }
 
@@ -389,24 +524,47 @@ async function loadPaymentConfig() {
   try {
     const res = await PaymentAPI.config();
     const cfg = res.data.data || res.data;
+    midtransIsProduction = Boolean(cfg.is_production);
     console.log("Payment config:", cfg);
 
-    // Set Midtrans snap script
-    if (cfg.client_key) {
-      midtransClientKey = cfg.client_key;
-      document.getElementById('midtrans-script').dataset.clientKey = cfg.client_key;
-      if (cfg.snap_url) document.getElementById('midtrans-script').src = cfg.snap_url;
+    const midtransCoreAvailable = cfg.midtrans_enabled === true;
+    let midtransAvailable = midtransCoreAvailable && Boolean(cfg.client_key);
+    if (midtransAvailable) {
+      try {
+        await loadMidtransSnap(cfg.snap_url, cfg.client_key);
+      } catch {
+        midtransAvailable = false;
+      }
     }
-
-    // Store shipping config globally
-    defaultShippingCost = Math.max(0, parseInt(cfg.default_shipping_cost, 10) || 0);
 
     // Show/hide payment options based on settings
     const midtransOpt = document.querySelector('.payment-option[data-method="midtrans"]');
+    const sandboxQrisOpt = document.querySelector('.payment-option[data-method="midtrans_qris"]');
     const transferOpt = document.querySelector('.payment-option[data-method="transfer"]');
     const codOpt      = document.querySelector('.payment-option[data-method="cod"]');
 
-    if (midtransOpt) midtransOpt.style.display = cfg.midtrans_enabled === false ? 'none' : '';
+    if (midtransOpt) {
+      const input = midtransOpt.querySelector('input');
+      const detail = document.getElementById('midtrans-detail');
+      input.disabled = !midtransAvailable;
+      midtransOpt.classList.toggle('is-disabled', !midtransAvailable);
+      midtransOpt.setAttribute('aria-disabled', String(!midtransAvailable));
+      if (detail) {
+        detail.textContent = midtransAvailable
+          ? 'Transfer, QRIS, VA, kartu kredit, dan metode lain.'
+          : cfg.midtrans_enabled
+            ? 'Midtrans gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.'
+            : 'Sandbox belum aktif. Isi kedua API key dan set MIDTRANS_ENABLED=true di .env.';
+      }
+    }
+    if (sandboxQrisOpt) {
+      const input = sandboxQrisOpt.querySelector('input');
+      const available = midtransCoreAvailable && !cfg.is_production;
+      sandboxQrisOpt.classList.toggle('d-none', !available);
+      sandboxQrisOpt.classList.toggle('is-disabled', !available);
+      sandboxQrisOpt.setAttribute('aria-disabled', String(!available));
+      input.disabled = !available;
+    }
     if (transferOpt) transferOpt.style.display = cfg.bank_transfer_enabled === false ? 'none' : '';
     if (codOpt)      codOpt.style.display      = cfg.cod_enabled === false ? 'none' : '';
 
@@ -418,15 +576,17 @@ async function loadPaymentConfig() {
     }
 
     // Auto-select first visible payment option
-    const visibleOpts = document.querySelectorAll('.payment-option:not([style*="none"])');
+    const visibleOpts = [...document.querySelectorAll('.payment-option:not([style*="none"])')]
+      .filter(option => !option.querySelector('input').disabled);
     if (visibleOpts.length > 0) {
       document.querySelectorAll('.payment-option').forEach(o => {
         o.classList.remove('selected');
         o.querySelector('input').checked = false;
       });
-      visibleOpts[0].classList.add('selected');
-      visibleOpts[0].querySelector('input').checked = true;
-      paymentMethod = visibleOpts[0].querySelector('input').value;
+      const defaultOption = visibleOpts.find(option => option.dataset.method === 'midtrans_qris') || visibleOpts[0];
+      defaultOption.classList.add('selected');
+      defaultOption.querySelector('input').checked = true;
+      paymentMethod = defaultOption.querySelector('input').value;
       // Tampilkan bank info jika transfer otomatis terpilih
       document.getElementById('bank-info').classList.toggle('d-none', paymentMethod !== 'transfer');
     }
@@ -435,11 +595,36 @@ async function loadPaymentConfig() {
   }
 }
 
+function loadMidtransSnap(snapUrl, clientKey) {
+  if (window.snap?.pay) return Promise.resolve();
+  if (midtransSnapPromise) return midtransSnapPromise;
+
+  midtransSnapPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.id = 'midtrans-script';
+    script.src = snapUrl || 'https://app.sandbox.midtrans.com/snap/snap.js';
+    script.dataset.clientKey = clientKey;
+    script.onload = () => window.snap?.pay ? resolve() : reject(new Error('Midtrans Snap tidak tersedia.'));
+    script.onerror = () => reject(new Error('Midtrans Snap gagal dimuat.'));
+    document.head.appendChild(script);
+  });
+
+  return midtransSnapPromise;
+}
+
 /* ---- Bind events ---- */
 function bindEvents() {
   $('#field-province').on('change', async function () {
     selectedCityId = null;
+    selectedDestinationId = null;
+    clearShippingOptions('Pilih provinsi, kota, dan kode pos untuk mencari area tujuan.');
     document.getElementById('field-postal').value = '';
+    const destinationSelect = document.getElementById('field-destination');
+    destinationSelect.innerHTML = '<option value="">Pilih kota, lalu cari area</option>';
+    destinationSelect.disabled = true;
+    const destinationSearch = document.getElementById('field-destination-search');
+    destinationSearch.value = '';
+    destinationSearch.disabled = true;
     const citySelect = document.getElementById('field-city');
     citySelect.innerHTML = '<option value="">— Pilih Kota —</option>';
     citySelect.disabled = !this.value;
@@ -450,12 +635,43 @@ function bindEvents() {
   $('#field-city').on('change', function () {
     selectedCityId = this.value || null;
     const postalCode = this.options[this.selectedIndex]?.dataset.postalCode;
-    if (postalCode) document.getElementById('field-postal').value = postalCode;
+    document.getElementById('field-postal').value = postalCode || '';
+    const search = document.getElementById('field-destination-search');
+    search.disabled = !this.value;
+    search.value = '';
+    selectedDestinationId = null;
+    clearShippingOptions('Ketik nama kecamatan atau kode pos untuk mencari area tujuan.');
+    const destinationSelect = document.getElementById('field-destination');
+    destinationSelect.disabled = true;
+    destinationSelect.innerHTML = '<option value="">Ketik nama kecamatan atau kode pos untuk mencari area</option>';
+  });
+
+  document.getElementById('field-destination-search').addEventListener('input', debounce(loadDestinationChoices, 400));
+  document.getElementById('field-postal').addEventListener('input', debounce(() => {
+    if (/^\d{5}$/.test(document.getElementById('field-postal').value.trim())) {
+      document.getElementById('field-destination-search').value = document.getElementById('field-postal').value.trim();
+      loadDestinationChoices();
+    }
+  }, 400));
+  document.getElementById('field-destination').addEventListener('change', loadShippingOptions);
+
+  const shippingOptions = document.getElementById('shipping-options');
+  shippingOptions.addEventListener('click', event => {
+    const option = event.target.closest('[data-shipping-rate]');
+    if (option) selectShippingRate(Number(option.dataset.shippingRate));
+  });
+  shippingOptions.addEventListener('keydown', event => {
+    const option = event.target.closest('[data-shipping-rate]');
+    if (option && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      selectShippingRate(Number(option.dataset.shippingRate));
+    }
   });
 
   // Payment method
   document.querySelectorAll('.payment-option').forEach(opt => {
     opt.addEventListener('click', () => {
+      if (opt.querySelector('input').disabled) return;
       document.querySelectorAll('.payment-option').forEach(o => {
         o.classList.remove('selected');
         o.querySelector('input').checked = false;
@@ -476,10 +692,13 @@ async function handleCheckout(e) {
   e.preventDefault();
 
   if (!validateForm()) return;
+  if (!selectedCourier || !selectedDestinationId) {
+    Toast.show('Pilih area tujuan dan layanan pengiriman terlebih dahulu.', 'error');
+    return;
+  }
   setSubmitting(true);
 
   const cartItems = Cart.toOrderItems();
-  const courierParts = (selectedCourier || '').split(':');
 
   const payload = {
     customer_name:     document.getElementById('field-name').value.trim(),
@@ -492,11 +711,12 @@ async function handleCheckout(e) {
     shipping_city_id:       selectedCityId || '',
     rajaongkir_city_id:     selectedCityId || '',
     rajaongkir_province_id: document.getElementById('field-province').value || '',
-    shipping_courier:       courierParts[0] || 'reguler',
-    shipping_service:       courierParts[1] || 'REG',
+    rajaongkir_destination_id: selectedDestinationId,
+    shipping_courier:       selectedCourier.code,
+    shipping_service:       selectedCourier.service,
     shipping_cost:          shippingCost,
     notes:                  document.getElementById('field-notes').value.trim(),
-    payment_method:         paymentMethod,
+    payment_method:         paymentMethod.startsWith('midtrans') ? 'midtrans' : paymentMethod,
     items:                  cartItems,
   };
 
@@ -504,21 +724,46 @@ async function handleCheckout(e) {
     const res = await CheckoutAPI.place(payload);
     const order = res.data.data || res.data;
 
-    if (paymentMethod === 'midtrans' && order.snap_token) {
-      // Open Midtrans Snap
-      window.snap.pay(order.snap_token, {
-        onSuccess: () => handleOrderSuccess(order, 'Pembayaran berhasil!'),
-        onPending: () => handleOrderSuccess(order, 'Menunggu pembayaran — cek email kamu.'),
-        onError:   () => { Toast.show('Pembayaran gagal, coba lagi.', 'error'); setSubmitting(false); },
-        onClose:   () => { setSubmitting(false); },
-      });
+    if (paymentMethod === 'midtrans_qris') {
+      try {
+        const qrisResponse = await PaymentAPI.sandboxQris(order.order_number, order.midtrans_token);
+        const qris = qrisResponse.data?.data || {};
+        showMidtransPending(order, {
+          payment_type: 'qris',
+          transaction_id: qris.transaction_id,
+        }, null, { actions: [{ name: 'generate-qr-code', url: qris.qr_url }] });
+      } catch (paymentError) {
+        const reason = paymentError.response?.data?.message || 'QRIS sandbox gagal dibuat.';
+        handleOrderSuccess(order, `Pesanan tercatat, tetapi ${reason}`);
+      }
+    } else if (paymentMethod === 'midtrans') {
+      try {
+        const snapResponse = await PaymentAPI.snapToken(order.order_number);
+        const snapToken = snapResponse.data?.data?.token || snapResponse.data?.token;
+        if (!snapToken || !window.snap?.pay) throw new Error('Pembayaran Midtrans belum siap.');
+        window.snap.pay(snapToken, {
+          onSuccess: () => handleOrderSuccess(order, 'Pembayaran berhasil!'),
+          onPending: (result) => {
+            midtransPendingResult = result || {};
+            showMidtransPending(order, midtransPendingResult, snapToken);
+          },
+          onError:   () => handleOrderSuccess(order, 'Pesanan sudah tercatat, tetapi pembayaran belum selesai. Gunakan nomor pesanan untuk menghubungi admin.'),
+          onClose:   () => showMidtransPending(order, midtransPendingResult || {}, snapToken),
+        });
+      } catch (paymentError) {
+        const orderNumber = order.order_number || order.id;
+        const reason = paymentError.response?.data?.message || 'halaman pembayaran gagal dibuka';
+        handleOrderSuccess(order, `Pesanan ${orderNumber} sudah tercatat, tetapi ${reason}. Hubungi admin dengan nomor pesanan tersebut.`);
+      }
     } else {
       handleOrderSuccess(order, paymentMethod === 'transfer'
         ? 'Silakan transfer ke rekening yang tertera, konfirmasi via email.'
         : 'Pesananmu sedang diproses!');
     }
   } catch (err) {
-    const msg = err.response?.data?.message || 'Gagal membuat pesanan. Coba lagi.';
+    const msg = err.response?.data?.errors?.shipping?.[0]
+      || err.response?.data?.message
+      || 'Gagal membuat pesanan. Coba lagi.';
     Toast.show(msg, 'error');
     setSubmitting(false);
   }
@@ -532,14 +777,74 @@ function handleOrderSuccess(order, info) {
   const orderNo = order.order_number || order.id;
   document.getElementById('order-number-text').textContent = `No. Pesanan: ${orderNo}`;
   document.getElementById('payment-info-text').textContent = info;
+  document.getElementById('midtrans-payment-details').classList.add('d-none');
   document.getElementById('btn-track-success').href = `lacak?id=${encodeURIComponent(orderNo)}`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function showMidtransPending(order, result = {}, snapToken, initialDetails = null) {
+  const paymentType = String(result.payment_type || '').toLowerCase();
+  const isQris = paymentType === 'qris' || Boolean(initialDetails?.actions?.length);
+  const info = isQris
+    ? 'QRIS siap diuji. Salin URL gambar di bawah dan tempelkan ke Simulator QRIS Midtrans.'
+    : 'Pembayaran belum selesai. Lihat kode pembayaran atau lanjutkan kembali melalui Midtrans.';
+  handleOrderSuccess(order, info);
+  const box = document.getElementById('midtrans-payment-details');
+  box.classList.remove('d-none');
+
+  let details = initialDetails || {};
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (details.actions?.length || details.payment_code || details.va_numbers?.length) break;
+    try {
+      const response = await PaymentAPI.details(order.order_number, snapToken, result.transaction_id);
+      details = response.data?.data || {};
+      if (details.actions?.length || details.payment_code || details.va_numbers?.length) break;
+    } catch (_) {}
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  const va = result.va_numbers?.[0]?.va_number || details.va_numbers?.[0]?.va_number || details.permata_va_number || details.bca_va_number || '';
+  const code = result.payment_code || details.payment_code || va;
+  const qrUrl = details.actions?.find(action => action.name === 'generate-qr-code-v2')?.url
+    || details.actions?.find(action => action.name === 'generate-qr-code')?.url;
+  const method = String(result.payment_type || details.payment_type || '').toLowerCase();
+  const detailsHtml = [];
+
+  if (code) {
+    const label = va ? 'Nomor Virtual Account' : 'Kode Pembayaran';
+    detailsHtml.push(`<div class="mb-2"><strong>${label}</strong><div class="d-flex gap-2 mt-1"><code class="form-control" id="midtrans-copy-value">${escHtml(code)}</code><button type="button" class="btn-gold" data-copy-payment style="white-space:nowrap;padding:.45rem .8rem">Salin</button></div></div>`);
+  }
+  if (details.biller_code || result.biller_code || details.bill_key || result.bill_key) {
+    for (const [label, value] of [['Kode perusahaan', details.biller_code || result.biller_code], ['Bill key', details.bill_key || result.bill_key]]) {
+      if (value) detailsHtml.push(`<div class="mb-2"><strong>${label}</strong><div class="d-flex gap-2 mt-1"><code class="form-control">${escHtml(value)}</code><button type="button" class="btn-gold" data-copy-value="${escHtml(value)}" style="padding:.45rem .8rem">Salin</button></div></div>`);
+    }
+  }
+  if (qrUrl) {
+    detailsHtml.push(`<div class="mb-2"><strong>QRIS</strong><p class="mb-2" style="font-size:.85rem">Salin URL gambar dari Midtrans, lalu tempel di kolom QR Code Image Url pada Simulator QRIS v2.</p><input class="form-control mb-2" type="url" readonly aria-label="URL gambar QRIS Midtrans" value="${escHtml(qrUrl)}"><div class="d-flex gap-2 flex-wrap"><button type="button" class="btn-gold" data-copy-value="${escHtml(qrUrl)}" style="padding:.45rem .8rem">Salin URL gambar QRIS</button>${!midtransIsProduction ? '<a class="btn-outline-gold" href="https://simulator.sandbox.midtrans.com/v2/qris/index" target="_blank" rel="noopener" style="text-decoration:none;padding:.45rem .8rem">Buka Simulator QRIS</a>' : ''}</div></div>`);
+  } else if (method === 'qris' || method === 'gopay') {
+    detailsHtml.push(`<p class="mb-2" style="font-size:.85rem">QRIS dari jendela Snap tidak menyediakan URL gambar untuk simulator. Buat pesanan baru dan pilih QRIS Sandbox (URL Simulator) agar URL dapat disalin.${!midtransIsProduction ? ' <a class="btn-outline-gold" href="https://simulator.sandbox.midtrans.com/v2/qris/index" target="_blank" rel="noopener" style="text-decoration:none;padding:.45rem .8rem">Buka Simulator QRIS v2</a>' : ''}</p>`);
+  }
+  if (!detailsHtml.length) detailsHtml.push('<p class="mb-0" style="font-size:.85rem">Instruksi pembayaran tersedia di jendela Midtrans. Jika memilih VA atau gerai, nomor/kode dapat disalin dari halaman tersebut.</p>');
+  box.innerHTML = detailsHtml.join('');
+  box.querySelectorAll('[data-copy-payment]').forEach(button => button.addEventListener('click', () => copyPaymentValue(document.getElementById('midtrans-copy-value')?.textContent || '')));
+  box.querySelectorAll('[data-copy-value]').forEach(button => button.addEventListener('click', () => copyPaymentValue(button.dataset.copyValue)));
+  box.querySelector('[data-refresh-payment]')?.addEventListener('click', () => showMidtransPending(order, result, snapToken));
+}
+
+async function copyPaymentValue(value) {
+  if (!value) return;
+  try {
+    await navigator.clipboard.writeText(value);
+    Toast.show('Berhasil disalin.', 'success');
+  } catch (_) {
+    Toast.show('Gagal menyalin. Salin teks secara manual.', 'error');
+  }
 }
 
 /* ---- Form validation ---- */
 function validateForm() {
   let valid = true;
-  const required = ['field-name', 'field-email', 'field-phone', 'field-address', 'field-province', 'field-city', 'field-postal'];
+  const required = ['field-name', 'field-email', 'field-phone', 'field-address', 'field-province', 'field-city', 'field-postal', 'field-destination'];
 
   required.forEach(id => {
     const el = document.getElementById(id);

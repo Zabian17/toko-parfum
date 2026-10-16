@@ -31,10 +31,11 @@ class StoreProductRequest extends FormRequest
             'tags'              => ['nullable', 'array'],
             'tags.*'            => ['string', 'max:100'],
 
-            // Variants — each entry: tier_id + stock + is_active
+            // Variants — each entry has its own shipping weight.
             'variants'               => ['nullable', 'array'],
             'variants.*.tier_id'     => ['required_with:variants', 'integer', 'exists:product_tiers,id'],
             'variants.*.stock'       => ['integer', 'min:0'],
+            'variants.*.weight'      => ['required_with:variants', 'integer', 'min:1', 'max:500000'],
             'variants.*.is_active'   => ['boolean'],
         ];
     }

@@ -83,6 +83,9 @@ class ProductSeeder extends Seeder
             foreach ($tiers as $tier) {
                 $product->variants()->create([
                     'tier_id'   => $tier->id,
+                    'weight'    => $tier->size_ml <= 30
+                        ? ($tier->grade === 'premium' ? 120 : 135)
+                        : ($tier->grade === 'premium' ? 175 : 195),
                     'stock'     => self::DEFAULT_STOCK,
                     'is_active' => true,
                 ]);

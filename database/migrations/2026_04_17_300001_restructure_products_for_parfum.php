@@ -23,16 +23,25 @@ return new class extends Migration
         // 1. Truncate all transactional & product data  (safe to do since
         //    the store is being restructured from scratch)
         // ------------------------------------------------------------------
-        Schema::disableForeignKeyConstraints();
-        DB::table('stock_movements')->truncate();
-        DB::table('order_items')->truncate();
-        DB::table('orders')->truncate();
-        DB::table('product_variants')->truncate();
-        DB::table('product_images')->truncate();
-        DB::table('product_tag_pivot')->truncate();
-        DB::table('products')->truncate();
-        DB::table('categories')->truncate();
-        Schema::enableForeignKeyConstraints();
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            foreach ([
+                'stock_movements', 'order_items', 'orders', 'product_variants',
+                'product_images', 'product_tag_pivot', 'products', 'categories',
+            ] as $table) {
+                DB::table($table)->delete();
+            }
+        } else {
+            Schema::disableForeignKeyConstraints();
+            DB::table('stock_movements')->truncate();
+            DB::table('order_items')->truncate();
+            DB::table('orders')->truncate();
+            DB::table('product_variants')->truncate();
+            DB::table('product_images')->truncate();
+            DB::table('product_tag_pivot')->truncate();
+            DB::table('products')->truncate();
+            DB::table('categories')->truncate();
+            Schema::enableForeignKeyConstraints();
+        }
 
         // ------------------------------------------------------------------
         // 2. Create product_tiers master table

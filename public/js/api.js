@@ -96,6 +96,7 @@ const CategoryAPI = {
 const ShippingAPI = {
   provinces: ()            => api.get('/shipping/provinces'),
   cities: (provinceId)     => api.get('/shipping/cities', { params: { province_id: provinceId } }),
+  destinations: (search)   => api.get('/shipping/destinations', { params: { search } }),
   cost: (payload)          => api.post('/shipping/cost', payload),
 };
 
@@ -103,12 +104,14 @@ const ShippingAPI = {
 const PaymentAPI = {
   config: ()                    => api.get('/payment/config'),
   snapToken: (orderNumber)      => api.get(`/payment/snap/${orderNumber}`),
+  sandboxQris: (orderNumber, paymentReference) => api.post(`/payment/qris-sandbox/${orderNumber}`, { payment_reference: paymentReference }),
+  details: (orderNumber, snapToken, transactionId) => api.get(`/payment/details/${orderNumber}`, { params: { snap_token: snapToken, transaction_id: transactionId || undefined } }),
   notification: (payload)       => api.post('/payment/notification', payload),
 };
 
 /* ---- Checkout ---- */
 const CheckoutAPI = {
-  place: (payload) => api.post('/checkout', payload),
+  place: (payload) => api.post('/checkout', payload, { timeout: 45000 }),
 };
 
 /* ---- Auth (Breeze) ---- */

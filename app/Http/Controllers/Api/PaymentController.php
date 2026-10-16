@@ -36,6 +36,68 @@ class PaymentController extends Controller
         return response()->json(['data' => $result]);
     }
 
+    public function transactionDetails(Request $request, string $orderNumber): JsonResponse
+    {
+        if (!$this->midtrans->isEnabled()) {
+            return response()->json(['message' => 'Midtrans is disabled.'], 503);
+        }
+
+        $order = Order::where('order_number', $orderNumber)
+            ->where('payment_method', 'midtrans')
+            ->firstOrFail();
+
+        $snapToken = (string) $request->query('snap_token', '');
+        $transactionId = (string) $request->query('transaction_id', '');
+        if ($transactionId !== '' && !preg_match('/^[a-f0-9-]{20,64}$/i', $transactionId)) {
+            return response()->json(['message' => 'Invalid transaction reference.'], 422);
+        }
+        $tokenMatches = $order->midtrans_token && hash_equals((string) $order->midtrans_token, $snapToken);
+        $transactionMatches = $order->midtrans_transaction_id && $transactionId
+            && hash_equals((string) $order->midtrans_transaction_id, $transactionId);
+        if (!$tokenMatches && !$transactionMatches) {
+            return response()->json(['message' => 'Invalid payment reference.'], 403);
+        }
+
+        return response()->json(['data' => $this->midtrans->getTransactionDetails($order, $transactionId ?: null)]);
+    }
+
+    public function createSandboxQris(Request $request, string $orderNumber): JsonResponse
+    {
+        if (!$this->midtrans->isEnabled() || $this->midtrans->isProduction()) {
+            return response()->json(['message' => 'QRIS Sandbox is unavailable.'], 503);
+        }
+
+        $order = Order::where('order_number', $orderNumber)
+            ->where('payment_method', 'midtrans')
+            ->where('payment_status', '!=', 'paid')
+            ->firstOrFail();
+
+        $paymentReference = (string) $request->input('payment_reference', '');
+        if (!$order->midtrans_token || !hash_equals((string) $order->midtrans_token, $paymentReference)) {
+            return response()->json(['message' => 'Invalid payment reference.'], 403);
+        }
+
+        if ($order->midtrans_transaction_id) {
+            $existing = $this->midtrans->getTransactionDetails($order, $order->midtrans_transaction_id);
+            $existingQr = collect($existing['actions'] ?? [])->firstWhere('name', 'generate-qr-code-v2')
+                ?? collect($existing['actions'] ?? [])->firstWhere('name', 'generate-qr-code');
+            if ($existingQr) {
+                return response()->json(['data' => [
+                    'transaction_id' => $order->midtrans_transaction_id,
+                    'qr_url' => $existingQr['url'],
+                ]]);
+            }
+            return response()->json(['message' => 'Transaksi Midtrans untuk pesanan ini sudah dibuat.'], 409);
+        }
+
+        $result = $this->midtrans->createSandboxQris($order);
+        if (!empty($result['error'])) {
+            return response()->json(['message' => $result['message']], 502);
+        }
+
+        return response()->json(['data' => $result]);
+    }
+
     /**
      * Midtrans webhook notification handler.
      * This endpoint must be excluded from CSRF (already excluded in API).

@@ -59,24 +59,41 @@
                 <textarea id="store_address" name="store_address" class="admin-form-control" rows="2"></textarea>
               </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <div class="admin-form-group">
-                <label class="admin-form-label">Kota / Kecamatan</label>
-                <input type="text" id="store_city" name="store_city" class="admin-form-control" />
+                <label class="admin-form-label" for="store_province_select">Provinsi</label>
+                <select id="store_province_select" class="admin-form-control">
+                  <option value="">Pilih provinsi</option>
+                </select>
               </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <div class="admin-form-group">
-                <label class="admin-form-label">Provinsi</label>
-                <input type="text" id="store_province" name="store_province" class="admin-form-control" />
+                <label class="admin-form-label" for="store_city_select">Kota / Kabupaten</label>
+                <select id="store_city_select" class="admin-form-control" disabled>
+                  <option value="">Pilih provinsi terlebih dahulu</option>
+                </select>
               </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <div class="admin-form-group">
-                <label class="admin-form-label">Kode Pos</label>
-                <input type="text" id="store_postal_code" name="store_postal_code" class="admin-form-control" />
+                <label class="admin-form-label" for="store_postal_code">Kode Pos</label>
+                <input type="text" id="store_postal_code" name="store_postal_code" class="admin-form-control" inputmode="numeric" maxlength="5" placeholder="Contoh: 11450" />
               </div>
             </div>
+            <div class="col-12 col-md-6">
+              <div class="admin-form-group">
+                <label class="admin-form-label" for="rajaongkir_origin">Kecamatan / Area Asal</label>
+                <select id="rajaongkir_origin" name="rajaongkir_origin" class="admin-form-control" disabled>
+                  <option value="">Masukkan kode pos untuk mencari area</option>
+                </select>
+                <small id="store-origin-hint" class="text-muted">Pilih provinsi, kota, dan masukkan kode pos toko.</small>
+              </div>
+            </div>
+            <input type="hidden" id="store_city" name="store_city" />
+            <input type="hidden" id="store_province" name="store_province" />
+            <input type="hidden" id="store_wilayah_city_id" name="store_wilayah_city_id" />
+            <input type="hidden" id="store_wilayah_province_id" name="store_wilayah_province_id" />
           </div>
         </div>
 
@@ -121,12 +138,20 @@
             <h6 class="admin-card-title"><i class="bi bi-truck me-2"></i>Pengiriman</h6>
           </div>
           <div class="row g-3 p-3">
-            <div class="col-12"><p class="text-muted mb-0">Menggunakan tarif tetap yang dapat diatur di bawah.</p></div>
+            <div class="col-12">
+              <div class="admin-toggle-group">
+                <label class="admin-toggle">
+                  <input type="checkbox" id="rajaongkir_enabled" name="rajaongkir_enabled" />
+                  <span class="admin-toggle-slider"></span>
+                </label>
+                <span class="admin-toggle-label">Hitung ongkir melalui RajaOngkir</span>
+              </div>
+            </div>
             <div class="col-12 col-md-6">
               <div class="admin-form-group">
-                <label class="admin-form-label" for="default_shipping_cost">Tarif Pengiriman Reguler</label>
-                <input type="number" id="default_shipping_cost" name="default_shipping_cost" class="admin-form-control" min="0" step="1000" placeholder="20000" />
-                <small class="text-muted">Tarif tetap untuk semua kota. Isi 0 untuk pengiriman gratis.</small>
+                <label class="admin-form-label" for="default_couriers">Kurir yang ditawarkan</label>
+                <input type="text" id="default_couriers" name="default_couriers" class="admin-form-control" placeholder="jne,jnt,pos" />
+                <small class="text-muted">Kode kurir dipisahkan koma, contoh: jne,jnt,pos,sicepat.</small>
               </div>
             </div>
           </div>
@@ -189,21 +214,31 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/admin-auth.js"></script>
 <script>
 let originalSettings = {};
 
+function debounce(fn, delay = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
 /* Field definitions — maps settings key to element id */
 const FIELDS_TEXT = [
   'store_name','store_phone','store_email','store_website','store_address',
   'store_city','store_province','store_postal_code',
-  'bank_transfer_info',
+  'store_wilayah_city_id','store_wilayah_province_id',
+  'bank_transfer_info','default_couriers',
   'admin_notification_email',
 ];
-const FIELDS_NUMBER = ['default_shipping_cost','low_stock_threshold'];
+const FIELDS_NUMBER = ['low_stock_threshold'];
 const FIELDS_BOOL = [
-  'cod_enabled','bank_transfer_enabled',
+  'rajaongkir_enabled','cod_enabled','bank_transfer_enabled',
   'email_notification_enabled','low_stock_alert',
 ];
 
@@ -213,6 +248,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   document.getElementById('settings-form').addEventListener('submit', saveSettings);
   document.getElementById('btn-reset').addEventListener('click', resetForm);
+  document.getElementById('store_province_select').addEventListener('change', async function () {
+    document.getElementById('store_postal_code').value = '';
+    clearStoreOrigin('Pilih kota dan masukkan kode pos toko.');
+    await loadStoreCities(this.value);
+    updateStoreAddressValues();
+  });
+  document.getElementById('store_city_select').addEventListener('change', function () {
+    document.getElementById('store_postal_code').value = '';
+    clearStoreOrigin('Masukkan kode pos toko untuk mencari kecamatan/area.');
+    updateStoreAddressValues();
+  });
+  document.getElementById('store_postal_code').addEventListener('input', debounce(() => searchStoreOrigin(), 400));
     document.getElementById('btn-test-email').addEventListener('click', async function () {
       const btn = this;
       const spinner = document.getElementById('test-email-spinner');
@@ -234,15 +281,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadSettings() {
+  const loading = document.getElementById('settings-loading');
+  loading.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memuat pengaturan…';
+  loading.classList.remove('d-none');
+  document.getElementById('settings-form').classList.add('d-none');
   try {
     const res = await adminApi.get('/settings');
     const data = res.data.data || res.data;
     originalSettings = flattenSettings(data);
     fillForm(originalSettings);
-    document.getElementById('settings-loading').classList.add('d-none');
+    await loadStoreAddress(originalSettings);
+    loading.classList.add('d-none');
     document.getElementById('settings-form').classList.remove('d-none');
-  } catch(e) {
-    document.getElementById('settings-loading').innerHTML = '<div class="admin-empty"><i class="bi bi-exclamation-circle"></i><br>Gagal memuat pengaturan</div>';
+  } catch (error) {
+    loading.innerHTML = '<div class="admin-empty"><i class="bi bi-exclamation-circle"></i><br><span id="settings-error-message"></span><br><button type="button" class="btn-admin-outline mt-2" id="settings-retry">Coba lagi</button></div>';
+    document.getElementById('settings-error-message').textContent = error.response?.data?.message || 'Gagal memuat pengaturan. Periksa koneksi lalu coba lagi.';
+    document.getElementById('settings-retry').addEventListener('click', loadSettings);
   }
 }
 
@@ -272,6 +326,117 @@ function fillForm(settings) {
   });
 }
 
+function normalizeRegionName(value) {
+  return String(value || '').toLocaleLowerCase('id-ID')
+    .replace(/^(kota(?: administrasi)?|kabupaten(?: administrasi)?|kab\.?)\s+/i, '').trim();
+}
+
+function updateStoreAddressValues() {
+  const province = document.getElementById('store_province_select');
+  const city = document.getElementById('store_city_select');
+  document.getElementById('store_province').value = province.value ? (province.selectedOptions[0]?.text || '') : '';
+  document.getElementById('store_wilayah_province_id').value = province.value || '';
+  document.getElementById('store_city').value = city.value ? (city.selectedOptions[0]?.text || '') : '';
+  document.getElementById('store_wilayah_city_id').value = city.value || '';
+}
+
+function clearStoreOrigin(message) {
+  const origin = document.getElementById('rajaongkir_origin');
+  origin.innerHTML = '<option value="">Masukkan kode pos untuk mencari area</option>';
+  origin.disabled = true;
+  document.getElementById('store-origin-hint').textContent = message;
+}
+
+async function loadStoreAddress(settings = {}) {
+  const province = document.getElementById('store_province_select');
+  province.disabled = true;
+  province.innerHTML = '<option value="">Memuat provinsi…</option>';
+  try {
+    const response = await axios.get('/api/shipping/provinces');
+    const provinces = response.data.data || [];
+    province.innerHTML = '<option value="">— Pilih Provinsi —</option>';
+    provinces.forEach(item => province.add(new Option(item.province, item.province_id)));
+    province.disabled = false;
+    const savedProvince = provinces.find(item =>
+      String(item.province_id) === String(settings.store_wilayah_province_id || '')
+      || normalizeRegionName(item.province) === normalizeRegionName(settings.store_province)
+    );
+    if (savedProvince) {
+      province.value = String(savedProvince.province_id);
+      await loadStoreCities(province.value, settings);
+    }
+    updateStoreAddressValues();
+    const postal = document.getElementById('store_postal_code').value.trim();
+    if (/^\d{5}$/.test(postal) && province.value && document.getElementById('store_city_select').value) {
+      await searchStoreOrigin(settings.rajaongkir_origin);
+    } else {
+      clearStoreOrigin('Pilih provinsi, kota, dan masukkan kode pos toko.');
+    }
+  } catch (error) {
+    province.innerHTML = '<option value="">Provinsi gagal dimuat</option>';
+    document.getElementById('store-origin-hint').textContent = error.response?.data?.message || 'Gagal memuat alamat. Coba muat ulang halaman.';
+  }
+}
+
+async function loadStoreCities(provinceId, settings = {}) {
+  const city = document.getElementById('store_city_select');
+  city.disabled = true;
+  city.innerHTML = '<option value="">Pilih provinsi terlebih dahulu</option>';
+  if (!provinceId) {
+    updateStoreAddressValues();
+    return;
+  }
+
+  city.innerHTML = '<option value="">Memuat kota/kabupaten…</option>';
+  try {
+    const response = await axios.get('/api/shipping/cities', { params: { province_id: provinceId } });
+    const cities = response.data.data || [];
+    city.innerHTML = '<option value="">— Pilih Kota / Kabupaten —</option>';
+    cities.forEach(item => city.add(new Option(item.city_name, item.city_id)));
+    city.disabled = false;
+    const savedCity = cities.find(item =>
+      String(item.city_id) === String(settings.store_wilayah_city_id || '')
+      || normalizeRegionName(item.city_name) === normalizeRegionName(settings.store_city)
+    );
+    if (savedCity) city.value = String(savedCity.city_id);
+    updateStoreAddressValues();
+  } catch (error) {
+    city.innerHTML = '<option value="">Kota/kabupaten gagal dimuat</option>';
+    document.getElementById('store-origin-hint').textContent = error.response?.data?.message || 'Gagal memuat kota/kabupaten.';
+  }
+}
+
+async function searchStoreOrigin(savedOrigin = '') {
+  const postal = document.getElementById('store_postal_code').value.trim();
+  const province = document.getElementById('store_province_select').selectedOptions[0]?.text || '';
+  const city = document.getElementById('store_city_select').selectedOptions[0]?.text || '';
+  const select = document.getElementById('rajaongkir_origin');
+  clearStoreOrigin('Masukkan kode pos 5 digit untuk mencari kecamatan/area.');
+  if (!/^\d{5}$/.test(postal) || !province || !city) return;
+
+  select.innerHTML = '<option value="">Mencari area…</option>';
+  try {
+    const response = await axios.get('/api/shipping/destinations', { params: { search: postal } });
+    const areas = response.data.data || [];
+    const normalizedCity = normalizeRegionName(city);
+    const normalizedProvince = normalizeRegionName(province);
+    const choices = areas.filter(area =>
+      (!area.city_name || normalizeRegionName(area.city_name) === normalizedCity)
+      && (!area.province_name || normalizeRegionName(area.province_name) === normalizedProvince)
+    );
+    select.innerHTML = '<option value="">— Pilih Kecamatan / Area Asal —</option>';
+    choices.forEach(area => select.add(new Option(area.label || `${area.subdistrict_name || ''}, ${area.district_name || ''}, ${area.city_name || ''}, ${area.province_name || ''}, ${area.zip_code || ''}`, area.id)));
+    select.disabled = choices.length === 0;
+    if (choices.some(area => String(area.id) === String(savedOrigin))) select.value = String(savedOrigin);
+    else if (choices.length === 1) select.value = String(choices[0].id);
+    document.getElementById('store-origin-hint').textContent = choices.length
+      ? 'Pilih area asal toko yang sesuai dengan alamat.'
+      : 'Area tidak ditemukan untuk kota dan kode pos ini.';
+  } catch (error) {
+    clearStoreOrigin(error.response?.data?.message || 'Gagal mencari area RajaOngkir. Periksa kode pos dan API key.');
+  }
+}
+
 function collectForm() {
   const payload = {};
   FIELDS_TEXT.forEach(k => {
@@ -286,6 +451,7 @@ function collectForm() {
     const el = document.getElementById(k);
     if (el) payload[k] = el.checked;
   });
+  payload.rajaongkir_origin = document.getElementById('rajaongkir_origin').value;
   return payload;
 }
 
@@ -317,8 +483,9 @@ async function saveSettings(e) {
   }
 }
 
-function resetForm() {
+async function resetForm() {
   fillForm(originalSettings);
+  await loadStoreAddress(originalSettings);
   showAlert('Form direset ke nilai tersimpan', 'warning');
 }
 </script>

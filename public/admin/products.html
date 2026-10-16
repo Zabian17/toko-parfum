@@ -11,7 +11,7 @@
   <link href="css/admin.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.0/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet" />
   <style>
-    .tier-row{display:flex;align-items:center;gap:1rem;padding:.6rem .8rem;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:.5rem;background:#fafafa}
+    .tier-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.6rem .8rem;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:.5rem;background:#fafafa}
     .tier-grade-badge{font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;white-space:nowrap}
     .tier-grade-premium{background:#FFF8E1;color:#b8860b}
     .tier-grade-super{background:#F3E5F5;color:#6a1b9a}
@@ -115,8 +115,8 @@
           <!-- Tier Variants -->
           <hr class="my-3" />
           <div class="mb-2">
-            <p class="fw-semibold mb-1" style="font-size:.88rem">Stok per Ukuran &amp; Grade</p>
-            <p class="text-muted small mb-2">Harga sudah ditentukan oleh tabel size. Isi stok yang tersedia.</p>
+            <p class="fw-semibold mb-1" style="font-size:.88rem">Varian, stok &amp; berat per ukuran</p>
+            <p class="text-muted small mb-2">Isi berat botol beserta kemasan dalam gram. Nilai awal hanya estimasi, sesuaikan dengan berat aktual.</p>
           </div>
           <div id="tiers-loading" class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Memuat tier…</div>
           <div id="tier-rows"></div>
@@ -278,6 +278,13 @@ function initTable() {
         }
       },
       {
+        title: 'Berat varian', field: 'variants', minWidth: 170,
+        formatter: function(cell) {
+          const variants = cell.getValue() || [];
+          return variants.map(v => `<div>${v.grade === 'premium' ? 'Premium' : 'Super Premium'} ${escA(v.size_ml || v.tier?.size_ml)}ml · ${Number(v.weight || 0).toLocaleString('id-ID')} g</div>`).join('') || '<span class="text-muted">Belum ada varian</span>';
+        }
+      },
+      {
         title: 'Harga', field: 'min_price', width: 160,
         headerFilter: 'input',
         formatter: function(cell) {
@@ -421,6 +428,7 @@ async function buildTierRows(existingVariants) {
   allTiers.forEach(tier => {
     const existing   = existingVariants.find(v => (v.tier_id ?? v.tier?.id) === tier.id);
     const stock      = existing?.stock ?? 0;
+    const weight     = existing?.weight || (tier.size_ml <= 30 ? (tier.grade === 'premium' ? 120 : 135) : (tier.grade === 'premium' ? 175 : 195));
     const isActive   = existing != null ? !!existing.is_active : true;
     const gradeClass = tier.grade === 'premium' ? 'tier-grade-premium' : 'tier-grade-super';
     const gradeLabel = tier.grade === 'premium' ? 'Premium' : 'Super Premium';
@@ -432,6 +440,9 @@ async function buildTierRows(existingVariants) {
       <span class="tier-grade-badge ${gradeClass}">${gradeLabel}</span>
       <span style="font-size:.82rem;font-weight:600;min-width:40px">${tier.size_ml}ml</span>
       <span class="tier-price-label">${fmtRp(tier.price)}</span>
+      <label style="font-size:.77rem;color:#888;white-space:nowrap">Berat (g):
+        <input type="number" class="admin-form-control tier-weight-input" style="width:92px;display:inline-block;padding:.3rem .5rem;font-size:.82rem" min="1" max="500000" step="1" required value="${weight}" />
+      </label>
       <div class="tier-stock-wrap">
         <label style="font-size:.77rem;color:#888;white-space:nowrap">Stok:</label>
         <input type="number" class="admin-form-control tier-stock-input"
@@ -449,6 +460,7 @@ function getTierVariants() {
   return Array.from(document.querySelectorAll('#tier-rows .tier-row')).map(row => ({
     tier_id:   parseInt(row.dataset.tierId),
     stock:     parseInt(row.querySelector('.tier-stock-input').value) || 0,
+    weight:    parseInt(row.querySelector('.tier-weight-input').value) || 0,
     is_active: row.querySelector('.tier-active-input').checked,
   }));
 }
@@ -479,9 +491,9 @@ async function confirmDelete() {
 async function saveProduct() {
   const name       = document.getElementById('form-name').value.trim();
   const categoryId = document.getElementById('form-category').value;
-
-  if (!name || !categoryId) {
-    showAlert('Nama aroma dan kategori wajib diisi.', 'error');
+  const tierVariants = getTierVariants();
+  if (!name || !categoryId || !tierVariants.length || tierVariants.some(v => !Number.isInteger(v.weight) || v.weight < 1 || v.weight > 500000)) {
+    showAlert('Nama, kategori, dan berat yang valid untuk setiap ukuran wajib diisi.', 'error');
     return;
   }
 
@@ -511,9 +523,10 @@ async function saveProduct() {
   newGalleryFiles.forEach((f, i) => fd.append(`images[${i}]`, f));
 
   // Tier variants
-  getTierVariants().forEach((v, i) => {
+  tierVariants.forEach((v, i) => {
     fd.append(`variants[${i}][tier_id]`,   v.tier_id);
     fd.append(`variants[${i}][stock]`,     v.stock);
+    fd.append(`variants[${i}][weight]`,    v.weight);
     fd.append(`variants[${i}][is_active]`, v.is_active ? 1 : 0);
   });
 

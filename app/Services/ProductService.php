@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\ProductTier;
 use App\Models\ProductTag;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
@@ -349,15 +350,21 @@ class ProductService
             $tierId = (int) ($variantData['tier_id'] ?? 0);
             if (!$tierId) continue;
 
+            $tier = ProductTier::find($tierId);
+            if (!$tier) continue;
+            $weight = (int) ($variantData['weight'] ?? self::estimatedVariantWeight($tier));
+
             $variant = $product->variants()->where('tier_id', $tierId)->first();
             if ($variant) {
                 $variant->update([
                     'stock'     => (int) ($variantData['stock'] ?? 0),
+                    'weight'    => $weight,
                     'is_active' => (bool) ($variantData['is_active'] ?? true),
                 ]);
             } else {
                 $product->variants()->create([
                     'tier_id'   => $tierId,
+                    'weight'    => $weight,
                     'stock'     => (int) ($variantData['stock'] ?? 0),
                     'is_active' => (bool) ($variantData['is_active'] ?? true),
                 ]);
@@ -371,6 +378,12 @@ class ProductService
         // Update aggregate stock on product
         $product->stock = $product->variants()->sum('stock');
         $product->save();
+    }
+
+    private static function estimatedVariantWeight(ProductTier $tier): int
+    {
+        if ($tier->size_ml <= 30) return $tier->grade === 'premium' ? 120 : 135;
+        return $tier->grade === 'premium' ? 175 : 195;
     }
 
     private function storeImages(Product $product, array $imageFiles): void

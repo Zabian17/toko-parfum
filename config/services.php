@@ -38,7 +38,7 @@ return [
     'rajaongkir' => [
         'api_key'  => env('RAJAONGKIR_API_KEY'),
         'base_url' => env('RAJAONGKIR_BASE_URL', 'https://api.rajaongkir.com'),
-        'default_origin' => env('RAJAONGKIR_DEFAULT_ORIGIN', '136'),
+        'default_origin' => env('RAJAONGKIR_DEFAULT_ORIGIN'),
         'cache_enabled' => env('RAJAONGKIR_CACHE_ENABLED', true),
         'cache_ttl' => env('RAJAONGKIR_CACHE_TTL', 86400),
     ],

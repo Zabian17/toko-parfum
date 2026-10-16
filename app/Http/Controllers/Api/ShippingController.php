@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Services\RajaOngkirService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -51,6 +52,33 @@ class ShippingController extends Controller
         return response()->json(['data' => $cities]);
     }
 
+    public function destinations(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'search' => ['required', 'string', 'min:2', 'max:100'],
+        ]);
+
+        if (!$this->rajaOngkir->hasApiKey()) {
+            return response()->json(['message' => 'API Key RajaOngkir belum diatur.'], 503);
+        }
+
+        try {
+            $destinations = $this->rajaOngkir->searchDestinations($validated['search']);
+        } catch (\Throwable $error) {
+            Log::warning('RajaOngkir destination search failed.', ['error' => $error->getMessage()]);
+
+            return response()->json([
+                'message' => 'RajaOngkir gagal mencari area. Periksa API key Shipping Cost dan koneksi server.',
+            ], 502);
+        }
+
+        if (empty($destinations)) {
+            return response()->json(['message' => 'Area tidak ditemukan. Coba cari dengan kode pos atau nama kecamatan.'], 404);
+        }
+
+        return response()->json(['data' => $destinations]);
+    }
+
     private function regionRows(string $path, string $cacheKey): ?array
     {
         try {
@@ -69,39 +97,56 @@ class ShippingController extends Controller
 
     public function cost(Request $request): JsonResponse
     {
-        $request->validate([
-            'origin'      => ['nullable', 'string'],
-            'destination' => ['required', 'string'],
-            'weight'      => ['required', 'integer', 'min:1'],
-            'courier'     => ['required', 'string', 'max:255'],
+        $validated = $request->validate([
+            'destination_id' => ['required', 'integer', 'min:1'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'items.*.product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         if (!$this->rajaOngkir->isEnabled()) {
             return response()->json(['message' => 'RajaOngkir is disabled.'], 503);
         }
 
-        $origin = $request->origin ?: ($this->rajaOngkir->getDefaultOriginId() ?: '136');
+        $origin = $this->rajaOngkir->getDefaultOriginId();
+        if (!$origin) {
+            return response()->json(['message' => 'Atur ID area asal toko di Pengaturan > Pengiriman.'], 422);
+        }
+
+        $variantIds = collect($validated['items'])->pluck('product_variant_id')->unique();
+        $variants = \App\Models\ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+        $weight = collect($validated['items'])->sum(function (array $item) use ($variants) {
+            $variant = $variants[$item['product_variant_id']] ?? null;
+            if (!$variant || (int) $variant->product_id !== (int) $item['product_id']) {
+                abort(422, 'Varian ukuran produk tidak valid.');
+            }
+            return (int) $variant->weight * (int) $item['quantity'];
+        });
+
+        if ($weight < 1) {
+            return response()->json(['message' => 'Berat produk belum diatur. Isi berat dalam gram di menu Produk terlebih dahulu.'], 422);
+        }
+
+        $couriers = collect(explode(',', (string) Setting::get('default_couriers', 'jne,jnt,pos')))
+            ->map(fn ($courier) => strtolower(trim($courier)))
+            ->filter(fn ($courier) => preg_match('/^[a-z0-9]+$/', $courier))
+            ->unique()
+            ->implode(':');
+
+        if ($couriers === '') {
+            return response()->json(['message' => 'Atur minimal satu kurir di Pengaturan > Pengiriman.'], 422);
+        }
 
         $results = $this->rajaOngkir->getCost(
             $origin,
-            $request->destination,
-            (int) $request->weight,
-            $request->courier
+            (string) $validated['destination_id'],
+            (int) $weight,
+            $couriers
         );
 
         if (empty($results)) {
-            $defaultCost = (int) \App\Models\Setting::get('default_shipping_cost', 20000);
-            if ($defaultCost <= 0) $defaultCost = 20000;
-            $results = [
-                [
-                    'name'        => 'Kurir Reguler (Tarif Standar)',
-                    'code'        => 'reguler',
-                    'service'     => 'REG',
-                    'description' => 'Pengiriman Standar',
-                    'cost'        => $defaultCost,
-                    'etd'         => '2-4 hari',
-                ]
-            ];
+            return response()->json(['message' => 'Tarif tidak tersedia. Periksa area asal, tujuan, dan kurir RajaOngkir.'], 422);
         }
 
         return response()->json(['data' => $results]);

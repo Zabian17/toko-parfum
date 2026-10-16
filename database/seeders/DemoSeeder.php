@@ -189,6 +189,9 @@ class DemoSeeder extends Seeder
                     [
                         'product_id' => $product->id,
                         'tier_id'    => $tier->id,
+                        'weight'     => $tier->size_ml <= 30
+                            ? ($tier->grade === 'premium' ? 120 : 135)
+                            : ($tier->grade === 'premium' ? 175 : 195),
                         'stock'      => $variantStocks[$i] ?? 0,
                         'is_active'  => true,
                     ]

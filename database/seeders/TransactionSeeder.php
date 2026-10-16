@@ -72,7 +72,7 @@ class TransactionSeeder extends Seeder
                         'quantity' => $qty,
                         'unit_price' => $unitPrice,
                         'subtotal' => $lineSubtotal,
-                        'weight' => $p->weight ?? 0,
+                        'weight' => $variant->weight ?? 0,
                     ];
                 }
 

@@ -18,6 +18,7 @@ class Product extends Model
         'slug',
         'description',
         'short_description',
+        'weight',
         'stock',
         'is_active',
         'is_featured',
@@ -26,6 +27,7 @@ class Product extends Model
     ];
 
     protected $casts = [
+        'weight'     => 'integer',
         'stock'      => 'integer',
         'sold_count' => 'integer',
         'is_active'  => 'boolean',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Order;
 
+use App\Services\MidtransService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CheckoutRequest extends FormRequest
@@ -15,6 +16,13 @@ class CheckoutRequest extends FormRequest
     {
         $isOffline = $this->is('api/admin/cashier/*')
             || $this->is('api/admin/orders/offline');
+        $paymentMethods = $isOffline
+            ? ['transfer', 'midtrans', 'cod', 'cash', 'qris']
+            : ['transfer', 'cod'];
+
+        if (!$isOffline && app(MidtransService::class)->isEnabled()) {
+            $paymentMethods[] = 'midtrans';
+        }
 
         return [
             // Customer info
@@ -29,12 +37,13 @@ class CheckoutRequest extends FormRequest
             'shipping_postal_code'     => [$isOffline ? 'nullable' : 'required', 'string', 'max:10'],
             'rajaongkir_city_id'       => ['nullable', 'string', 'max:10'],
             'rajaongkir_province_id'   => ['nullable', 'string', 'max:10'],
-            'shipping_courier'         => ['nullable', 'string', 'max:50'],
-            'shipping_service'         => ['nullable', 'string', 'max:50'],
+            'rajaongkir_destination_id' => [$isOffline ? 'nullable' : 'required', 'integer', 'min:1'],
+            'shipping_courier'         => [$isOffline ? 'nullable' : 'required', 'string', 'max:50'],
+            'shipping_service'         => [$isOffline ? 'nullable' : 'required', 'string', 'max:50'],
             'shipping_cost'            => ['nullable', 'numeric', 'min:0'],
 
             // Payment
-            'payment_method'           => ['required', $isOffline ? 'in:transfer,midtrans,cod,cash,qris' : 'in:transfer,cod'],
+            'payment_method'           => ['required', 'in:' . implode(',', $paymentMethods)],
             'notes'                    => ['nullable', 'string', 'max:500'],
 
             // Cart items

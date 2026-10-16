@@ -197,14 +197,19 @@ MAIL_FROM_ADDRESS="noreply@tokoparfum.local"
 MAIL_FROM_NAME="Toko Parfum"
 
 RAJAONGKIR_API_KEY=
-RAJAONGKIR_BASE_URL=https://api.rajaongkir.com
+RAJAONGKIR_BASE_URL=https://rajaongkir.komerce.id/api/v1/
 RAJAONGKIR_CACHE_ENABLED=true
 RAJAONGKIR_CACHE_TTL=86400
 
+MIDTRANS_ENABLED=false
 MIDTRANS_SERVER_KEY=
 MIDTRANS_CLIENT_KEY=
 MIDTRANS_IS_PRODUCTION=false
 ```
+
+Untuk mengaktifkan pembayaran Midtrans, isi Server Key dan Client Key dari menu **Settings > Access Keys** di Midtrans, lalu set `MIDTRANS_ENABLED=true`. Gunakan key Sandbox saat `MIDTRANS_IS_PRODUCTION=false`. Aktifkan juga `midtrans_enabled` pada pengaturan pembayaran admin, lalu jalankan `php artisan config:clear` setelah mengubah `.env`. Callback notifikasi Midtrans: `https://domain-toko/api/payment/notification`.
+
+Ongkir checkout memakai RajaOngkir Shipping Cost. Isi `RAJAONGKIR_API_KEY`, aktifkan RajaOngkir pada **Admin > Pengaturan > Pengiriman**, lalu cari dan pilih area asal toko di pengaturan tersebut. Isi berat produk dalam gram pada form produk; checkout menghitung tarif dari berat produk dan area tujuan yang dipilih pelanggan.
 
 ## 5.5 Migrate database + symlink storage
 
@@ -642,9 +647,11 @@ php artisan test
 
 ## 14.2 Midtrans tidak bisa create token
 
-- Cek `MIDTRANS_SERVER_KEY` dan `MIDTRANS_CLIENT_KEY`
+- Isi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_CLIENT_KEY`, lalu set `MIDTRANS_ENABLED=true`
+- Pastikan `MIDTRANS_IS_PRODUCTION` cocok dengan jenis API key
 - Cek setting `midtrans_enabled` di menu admin settings
 - Cek endpoint `/api/payment/config`
+- Atur URL notifikasi Midtrans ke `https://domain-toko/api/payment/notification`
 
 ## 14.3 Ongkir kosong
 

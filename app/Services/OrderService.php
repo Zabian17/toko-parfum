@@ -13,11 +13,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
     public function __construct(
-        private readonly StockService $stockService
+        private readonly StockService $stockService,
+        private readonly RajaOngkirService $rajaOngkir
     ) {}
 
     public function list(array $filters = []): LengthAwarePaginator
@@ -136,6 +139,9 @@ class OrderService
                         ], 422)
                     );
                 }
+                if ((int) $variant->product_id !== (int) $product->id) {
+                    throw ValidationException::withMessages(['variant' => "Ukuran produk {$product->name} tidak valid."]);
+                }
 
                 $price = (float) $variant->tier->price;
                 $qty   = (int) $item['quantity'];
@@ -155,6 +161,8 @@ class OrderService
 
                 $itemSubtotal = $price * $qty;
                 $subtotal    += $itemSubtotal;
+                $itemWeight = max(0, (int) $variant->weight);
+                $totalWeight += $itemWeight * $qty;
 
                 $orderItems[] = [
                     'product_id'          => $product->id,
@@ -166,11 +174,45 @@ class OrderService
                     'quantity'            => $qty,
                     'unit_price'          => $price,
                     'subtotal'            => $itemSubtotal,
-                    'weight'              => 0,
+                    'weight'              => $itemWeight,
                 ];
             }
 
             $shippingCost = (float) ($data['shipping_cost'] ?? 0);
+            if (($data['order_type'] ?? 'online') !== 'offline') {
+                if (!$this->rajaOngkir->isEnabled()) {
+                    throw ValidationException::withMessages(['shipping' => 'RajaOngkir belum aktif. Coba lagi nanti atau hubungi admin.']);
+                }
+                if ($totalWeight < 1) {
+                    throw ValidationException::withMessages(['shipping' => 'Berat produk belum diatur. Admin perlu mengisi berat produk dalam gram.']);
+                }
+
+                $originId = $this->rajaOngkir->getDefaultOriginId();
+                $destinationId = (string) ($data['rajaongkir_destination_id'] ?? '');
+                $courier = strtolower((string) ($data['shipping_courier'] ?? ''));
+                $service = (string) ($data['shipping_service'] ?? '');
+                if (!$originId || !$destinationId || $courier === '' || $service === '') {
+                    throw ValidationException::withMessages(['shipping' => 'Pilih area asal, area tujuan, dan layanan pengiriman.']);
+                }
+                $rates = $this->rajaOngkir->getCost(
+                    $originId,
+                    $destinationId,
+                    $totalWeight,
+                    $courier
+                );
+                $selectedRate = collect($rates)->first(fn ($rate) =>
+                    strtolower((string) ($rate['code'] ?? '')) === $courier
+                    && (string) ($rate['service'] ?? '') === $service
+                );
+
+                if (!$selectedRate || !is_numeric($selectedRate['cost'] ?? null)) {
+                    throw ValidationException::withMessages(['shipping' => 'Tarif berubah atau tidak tersedia. Pilih ulang layanan pengiriman.']);
+                }
+
+                $shippingCost = (float) $selectedRate['cost'];
+                $data['shipping_courier'] = $selectedRate['code'];
+                $data['shipping_service'] = $selectedRate['service'];
+            }
             $totalAmount  = $subtotal + $shippingCost;
 
             // Find or create customer
@@ -214,6 +256,7 @@ class OrderService
                 'discount_amount'        => 0,
                 'total_amount'           => $totalAmount,
                 'payment_method'         => $data['payment_method'],
+                'midtrans_token'         => $data['payment_method'] === 'midtrans' ? Str::random(48) : null,
                 'payment_status'         => $data['payment_status'] ?? 'unpaid',
                 'status'                 => $data['status'] ?? 'pending',
                 'notes'                  => $data['notes'] ?? null,

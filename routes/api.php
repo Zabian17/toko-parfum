@@ -44,12 +44,15 @@ Route::get('/orders/track/{orderNumber}', [OrderController::class, 'track']);
 Route::prefix('shipping')->group(function () {
     Route::get('/provinces', [ShippingController::class, 'provinces']);
     Route::get('/cities', [ShippingController::class, 'cities']);
+    Route::get('/destinations', [ShippingController::class, 'destinations']);
     Route::post('/cost', [ShippingController::class, 'cost']);
 });
 
 // Payment (Midtrans) - Public
 Route::get('/payment/config', [PaymentController::class, 'config']);
 Route::get('/payment/snap/{orderNumber}', [PaymentController::class, 'createSnapToken']);
+Route::post('/payment/qris-sandbox/{orderNumber}', [PaymentController::class, 'createSandboxQris']);
+Route::get('/payment/details/{orderNumber}', [PaymentController::class, 'transactionDetails']);
 Route::post('/payment/notification', [PaymentController::class, 'notification']);
 
 /*
