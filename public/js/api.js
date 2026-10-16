@@ -10,7 +10,7 @@ function getApiBase() {
 
 const API_BASE = getApiBase();
 const IS_VERCEL_PREVIEW = location.hostname.endsWith('.vercel.app')
-  && location.hostname.includes('-git-');
+  && (location.hostname.includes('-git-') || location.hostname === 'albi-parfum.vercel.app');
 const PREVIEW_SESSION_KEY = 'albi_preview_session';
 const PREVIEW_NAVIGATION_KEY = 'albi_preview_navigation';
 
