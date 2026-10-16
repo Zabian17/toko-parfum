@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PreviewSessionController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ShippingController;
 use App\Http\Controllers\Api\StockController;
@@ -37,6 +38,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 // Checkout - Public (guest)
+Route::post('/preview/session/reset', [PreviewSessionController::class, 'reset'])->middleware('throttle:30,1');
 Route::post('/checkout', [OrderController::class, 'checkout']);
 Route::get('/orders/track/{orderNumber}', [OrderController::class, 'track']);
 

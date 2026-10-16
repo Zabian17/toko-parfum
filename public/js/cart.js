@@ -1,5 +1,5 @@
 /**
- * cart.js — LocalStorage cart management for Toko Albi Parfum
+ * cart.js — Cart storage for Toko Albi Parfum
  *
  * Cart item shape:
  * {
@@ -16,12 +16,16 @@
  */
 
 const CART_KEY = 'albi_cart';
+const CART_STORAGE = location.hostname.endsWith('.vercel.app')
+  && location.hostname.includes('-git-')
+  ? sessionStorage
+  : localStorage;
 
 const Cart = {
   /* ---- Read ---- */
   all() {
     try {
-      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      return JSON.parse(CART_STORAGE.getItem(CART_KEY)) || [];
     } catch {
       return [];
     }
@@ -41,7 +45,7 @@ const Cart = {
 
   /* ---- Write ---- */
   _save(items) {
-    localStorage.setItem(CART_KEY, JSON.stringify(items));
+    CART_STORAGE.setItem(CART_KEY, JSON.stringify(items));
     Cart._notifyBadge();
   },
 
@@ -77,7 +81,7 @@ const Cart = {
   },
 
   clear() {
-    localStorage.removeItem(CART_KEY);
+    CART_STORAGE.removeItem(CART_KEY);
     Cart._notifyBadge();
   },
 

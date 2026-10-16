@@ -9,6 +9,24 @@ function getApiBase() {
 }
 
 const API_BASE = getApiBase();
+const IS_VERCEL_PREVIEW = location.hostname.endsWith('.vercel.app')
+  && location.hostname.includes('-git-');
+const PREVIEW_SESSION_KEY = 'albi_preview_session';
+const PREVIEW_NAVIGATION_KEY = 'albi_preview_navigation';
+
+function getPreviewSessionId() {
+  if (!IS_VERCEL_PREVIEW) return null;
+  try {
+    let id = sessionStorage.getItem(PREVIEW_SESSION_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem(PREVIEW_SESSION_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
 
 console.log('%c[API] Base URL: ' + API_BASE, 'color:#C9A84C;font-weight:bold');
 
@@ -50,11 +68,46 @@ const api = axios.create({
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('albi_token');
   if (token) config.headers['Authorization'] = `Bearer ${token}`;
+  const previewSessionId = getPreviewSessionId();
+  if (previewSessionId) config.headers['X-Preview-Session'] = previewSessionId;
 
   const params = config.params ? ' ' + JSON.stringify(config.params) : '';
   console.log(`%c[API] ▶ ${config.method?.toUpperCase()} ${config.baseURL}${config.url}${params}`, 'color:#4a90d9');
   return config;
 });
+
+if (IS_VERCEL_PREVIEW) {
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.target === '_blank' || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const destination = new URL(link.href, location.href);
+    if (destination.origin === location.origin
+      && (destination.pathname !== location.pathname || destination.search !== location.search)) {
+      sessionStorage.setItem(PREVIEW_NAVIGATION_KEY, '1');
+    }
+  }, true);
+
+  window.addEventListener('pagehide', () => {
+    const sessionId = sessionStorage.getItem(PREVIEW_SESSION_KEY);
+    if (!sessionId) return;
+    if (sessionStorage.getItem(PREVIEW_NAVIGATION_KEY) === '1') {
+      sessionStorage.removeItem(PREVIEW_NAVIGATION_KEY);
+      return;
+    }
+
+    const body = new Blob([JSON.stringify({ session_id: sessionId })], { type: 'application/json' });
+    const accepted = navigator.sendBeacon(`${API_BASE}/preview/session/reset`, body);
+    if (!accepted) {
+      fetch(`${API_BASE}/preview/session/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+        keepalive: true,
+      });
+    }
+  });
+}
 
 // Global response + error logger
 api.interceptors.response.use(

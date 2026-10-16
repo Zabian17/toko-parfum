@@ -38,7 +38,9 @@ class OrderResource extends JsonResource
             'paid_at'                  => $this->paid_at?->toDateTimeString(),
             'status'                   => $this->status,
             'notes'                    => $this->notes,
-            'admin_notes'              => $this->admin_notes,
+            'admin_notes'              => str_starts_with((string) $this->admin_notes, '[preview-session:')
+                ? null
+                : $this->admin_notes,
             'items'                    => OrderItemResource::collection($this->whenLoaded('items')),
             'customer'                 => new CustomerResource($this->whenLoaded('customer')),
             'created_at'               => $this->created_at?->toDateTimeString(),

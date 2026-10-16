@@ -54,7 +54,16 @@ class OrderController extends Controller
             ], 503);
         }
 
-        $order = $this->service->checkout($request->validated());
+        $data = $request->validated();
+        if ($vercelEnvironment === 'preview') {
+            $previewSessionId = (string) $request->header('X-Preview-Session', '');
+            if (!\Illuminate\Support\Str::isUuid($previewSessionId)) {
+                return response()->json(['message' => 'Sesi preview tidak valid. Muat ulang halaman checkout.'], 422);
+            }
+            $data['_preview_session_id'] = strtolower($previewSessionId);
+        }
+
+        $order = $this->service->checkout($data);
 
         return response()->json(['data' => new OrderResource($order)], 201);
     }

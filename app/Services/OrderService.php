@@ -223,6 +223,7 @@ class OrderService
             if (!$customer && !empty($data['customer_email'])) {
                 $customer = \App\Models\Customer::where('email', $data['customer_email'])->first();
             }
+            $customerCreated = false;
             if (!$customer) {
                 $customer = \App\Models\Customer::create([
                     'name'        => $data['customer_name'],
@@ -234,6 +235,15 @@ class OrderService
                     'postal_code' => $data['shipping_postal_code'] ?? null,
                     'is_active'   => true,
                 ]);
+                $customerCreated = true;
+            }
+
+            $adminNotes = null;
+            if (!empty($data['_preview_session_id'])) {
+                $adminNotes = '[preview-session:' . $data['_preview_session_id'] . ']';
+                if ($customerCreated) {
+                    $adminNotes .= '[preview-customer:' . $customer->id . ']';
+                }
             }
 
             $order = Order::create([
@@ -260,6 +270,7 @@ class OrderService
                 'payment_status'         => $data['payment_status'] ?? 'unpaid',
                 'status'                 => $data['status'] ?? 'pending',
                 'notes'                  => $data['notes'] ?? null,
+                'admin_notes'            => $adminNotes,
                 'order_type'             => $data['order_type'] ?? 'online',
             ]);
 
