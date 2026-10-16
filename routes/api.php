@@ -118,6 +118,8 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     });
 
     // Dashboard & Reports
+    Route::get('/orders/preview-reset', [PreviewSessionController::class, 'resetAllSummary']);
+    Route::post('/orders/preview-reset', [PreviewSessionController::class, 'resetAll']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/reports/sales/{period?}', [DashboardController::class, 'salesReport']);
     Route::get('/reports/products', [DashboardController::class, 'productSalesReport']);

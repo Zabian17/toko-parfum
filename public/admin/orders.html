@@ -43,12 +43,33 @@
         <input type="date" id="filter-date-from" class="admin-form-control" style="width:auto" title="Dari tanggal" />
         <input type="date" id="filter-date-to"   class="admin-form-control" style="width:auto" title="Sampai tanggal" />
         <button type="button" id="refresh-orders" class="btn-admin-outline"><i class="bi bi-arrow-clockwise me-1"></i>Perbarui</button>
+        <button type="button" id="reset-preview-orders" class="btn-admin-outline d-none" style="border-color:#b42318;color:#b42318"><i class="bi bi-trash3 me-1"></i>Reset pesanan Preview</button>
       </div>
 
       <div class="admin-card">
         <div id="orders-table"></div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="previewResetModal" tabindex="-1" aria-labelledby="previewResetTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewResetTitle">Reset pesanan Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <p>Semua <strong id="preview-reset-count">0</strong> pesanan Preview akan dihapus, termasuk yang sudah lunas. Stok produk akan dikembalikan.</p>
+        <label class="admin-form-label" for="preview-reset-confirmation">Ketik <code>RESET_PREVIEW_ORDERS</code> untuk mengonfirmasi.</label>
+        <input id="preview-reset-confirmation" class="admin-form-control" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-admin-danger" id="confirm-preview-reset">Hapus semua pesanan</button>
+      </div>
     </div>
   </div>
 </div>
@@ -92,6 +113,7 @@
 <script src="js/admin-auth.js"></script>
 <script>
 const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+const previewResetModal = new bootstrap.Modal(document.getElementById('previewResetModal'));
 let openOrderId = null;
 let table;
 
@@ -100,10 +122,63 @@ document.addEventListener('DOMContentLoaded', () => {
   AdminAuth.buildLayout('Kelola Pesanan', 'orders');
   initTable();
   bindEvents();
+  initPreviewReset();
   window.setInterval(() => {
     if (!document.hidden) table.setData();
   }, 30000);
 });
+
+async function initPreviewReset() {
+  try {
+    const res = await axios.get('/api/admin/orders/preview-reset', {
+      headers: { 'Authorization': 'Bearer ' + AdminAuth.token(), 'Accept': 'application/json' },
+    });
+    const data = res.data?.data;
+    if (!data?.available) return;
+    const button = document.getElementById('reset-preview-orders');
+    button.classList.remove('d-none');
+    button.innerHTML = `<i class="bi bi-trash3 me-1"></i>Reset pesanan Preview (${data.orders})`;
+    button.disabled = data.orders === 0;
+    button.title = `${data.orders} pesanan akan dihapus dan stok dikembalikan`;
+    document.getElementById('preview-reset-count').textContent = data.orders;
+    button.addEventListener('click', () => {
+      document.getElementById('preview-reset-confirmation').value = '';
+      previewResetModal.show();
+    });
+  } catch (_) {}
+}
+
+async function resetPreviewOrders() {
+  const phrase = 'RESET_PREVIEW_ORDERS';
+  const confirmation = document.getElementById('preview-reset-confirmation');
+  if (confirmation.value !== phrase) {
+    confirmation.classList.add('is-invalid');
+    confirmation.focus();
+    return;
+  }
+  confirmation.classList.remove('is-invalid');
+
+  const button = document.getElementById('reset-preview-orders');
+  const submitButton = document.getElementById('confirm-preview-reset');
+  button.disabled = true;
+  submitButton.disabled = true;
+  try {
+    const res = await axios.post('/api/admin/orders/preview-reset', { confirmation: phrase }, {
+      headers: { 'Authorization': 'Bearer ' + AdminAuth.token(), 'Accept': 'application/json' },
+    });
+    previewResetModal.hide();
+    table.setData();
+    const deleted = res.data?.data?.deleted_orders ?? 0;
+    document.getElementById('preview-reset-count').textContent = '0';
+    button.innerHTML = '<i class="bi bi-trash3 me-1"></i>Reset pesanan Preview (0)';
+    button.title = 'Tidak ada pesanan Preview untuk dihapus';
+    showAlert(`Reset selesai. ${deleted} pesanan dihapus; stok dikembalikan.`, 'success');
+  } catch (error) {
+    showAlert(error.response?.data?.message || 'Reset pesanan Preview gagal.', 'error');
+    button.disabled = false;
+    submitButton.disabled = false;
+  }
+}
 
 function initTable() {
   table = new Tabulator('#orders-table', {
@@ -237,6 +312,10 @@ function bindEvents() {
   document.getElementById('filter-date-to').addEventListener('change', () => table.setData());
   document.getElementById('refresh-orders').addEventListener('click', () => table.setData());
   document.getElementById('btn-update-status').addEventListener('click', updateOrderStatus);
+  document.getElementById('confirm-preview-reset').addEventListener('click', resetPreviewOrders);
+  document.getElementById('preview-reset-confirmation').addEventListener('input', (event) => {
+    event.target.classList.remove('is-invalid');
+  });
   document.getElementById('status-select').addEventListener('change', (e) => {
     const hint = document.getElementById('auto-paid-hint');
     if (e.target.value === 'delivered') {

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -78,8 +79,6 @@ class Order extends Model
     // Generate unique order number: ORD-YYYYMMDD-XXXXX
     public static function generateOrderNumber(): string
     {
-        $date   = now()->format('Ymd');
-        $last   = static::whereDate('created_at', today())->count() + 1;
-        return 'ORD-' . $date . '-' . str_pad($last, 5, '0', STR_PAD_LEFT);
+        return 'ORD-' . now()->format('Ymd') . '-' . Str::ulid();
     }
 }

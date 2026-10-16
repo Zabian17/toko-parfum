@@ -14,6 +14,28 @@ use Illuminate\Support\Facades\DB;
 
 class PreviewSessionController extends Controller
 {
+    public function resetAllSummary(Request $request): JsonResponse
+    {
+        $this->authorizePreviewReset($request);
+
+        return response()->json([
+            'data' => [
+                'available' => true,
+                'orders' => Order::query()->count(),
+            ],
+        ]);
+    }
+
+    public function resetAll(Request $request): JsonResponse
+    {
+        $this->authorizePreviewReset($request);
+        $request->validate(['confirmation' => ['required', 'in:RESET_PREVIEW_ORDERS']]);
+
+        $deletedOrders = $this->deleteOrders(Order::query());
+
+        return response()->json(['data' => ['deleted_orders' => $deletedOrders]]);
+    }
+
     public function reset(Request $request): JsonResponse
     {
         if ((getenv('VERCEL_ENV') ?: '') !== 'preview') {
@@ -24,14 +46,29 @@ class PreviewSessionController extends Controller
         $sessionId = strtolower($data['session_id']);
         $marker = '[preview-session:' . $sessionId . ']';
 
-        $deletedOrders = DB::transaction(function () use ($marker) {
-            $orders = Order::query()
-                ->where('admin_notes', 'like', $marker . '%')
-                ->with('items')
-                ->lockForUpdate()
-                ->get();
+        $deletedOrders = $this->deleteOrders(
+            Order::query()->where('admin_notes', 'like', $marker . '%')
+        );
 
+        return response()->json(['data' => ['deleted_orders' => $deletedOrders]]);
+    }
+
+    private function authorizePreviewReset(Request $request): void
+    {
+        if ((getenv('VERCEL_ENV') ?: '') !== 'preview') {
+            abort(404);
+        }
+
+        $user = $request->user();
+        abort_unless($user && ($user->id === 1 || $user->isSuperAdmin()), 403);
+    }
+
+    private function deleteOrders($query): int
+    {
+        return DB::transaction(function () use ($query) {
+            $orders = $query->with('items')->lockForUpdate()->get();
             $newCustomerIds = [];
+
             foreach ($orders as $order) {
                 if (preg_match('/\[preview-customer:(\d+)\]/', (string) $order->admin_notes, $match)) {
                     $newCustomerIds[] = (int) $match[1];
@@ -68,7 +105,5 @@ class PreviewSessionController extends Controller
 
             return $orders->count();
         });
-
-        return response()->json(['data' => ['deleted_orders' => $deletedOrders]]);
     }
 }
