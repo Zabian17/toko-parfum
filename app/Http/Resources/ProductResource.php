@@ -9,6 +9,22 @@ class ProductResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $thumbnail = $this->thumbnail;
+
+        if (!$thumbnail) {
+            $fallbackNames = [
+                'chanel-no5-ori' => 'chanel_no5',
+                'dior-sauvage-ori' => 'dior_sauvage',
+                'luxury-gift-set-3in1' => 'gift_set',
+            ];
+            $imageName = $fallbackNames[$this->slug] ?? str_replace('-', '_', $this->slug);
+            $fallback = 'images/products/' . $imageName . '.png';
+
+            if (file_exists(public_path($fallback))) {
+                $thumbnail = $fallback;
+            }
+        }
+
         return [
             'id'                => $this->id,
             'name'              => $this->name,
@@ -19,10 +35,10 @@ class ProductResource extends JsonResource
             'weight'            => (int) $this->weight,
             'is_active'         => $this->is_active,
             'is_featured'       => $this->is_featured,
-            'thumbnail'         => $this->thumbnail 
-                ? (str_starts_with($this->thumbnail, 'images/') || str_starts_with($this->thumbnail, 'http')
-                    ? '/' . $this->thumbnail 
-                    : '/storage/' . $this->thumbnail) 
+            'thumbnail'         => $thumbnail
+                ? (str_starts_with($thumbnail, 'images/') || str_starts_with($thumbnail, 'http')
+                    ? '/' . $thumbnail
+                    : '/storage/' . $thumbnail)
                 : null,
             'sold_count'        => $this->sold_count,
             // Minimum price across active variants (for display in catalog)
